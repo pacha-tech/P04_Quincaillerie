@@ -1,4 +1,4 @@
-package com.ict300.P04.repository.interfacesImpl;
+package com.ict300.P04.repository.interfacesImpl.favoriteQuincaillerie;
 
 import com.ict300.P04.Entite.FavoriteQuincaillerie;
 import com.ict300.P04.repository.interfaces.favoriteQuincaillerie.FavoriteQuincaillerieCustomInterface;

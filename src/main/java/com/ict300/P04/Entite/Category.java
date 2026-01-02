@@ -8,7 +8,7 @@ import java.util.List;
 
 @Entity
 @Data
-@Table(name = "\"Category\"")git
+@Table(name = "\"Category\"")
 public class Category {
     @Id
     @Column(name = "id_category")

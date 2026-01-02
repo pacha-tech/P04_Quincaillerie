@@ -2,13 +2,12 @@ package com.ict300.P04.Entite;
 
 import jakarta.persistence.*;
 import lombok.Data;
-
-import javax.print.attribute.standard.MediaSize;
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
 
 @Entity
 @Data
+@Table(name = "\"Favorite_product\"")
 public class FavoriteProduct {
     @Id
     @Column(name = "id_favorite_product")

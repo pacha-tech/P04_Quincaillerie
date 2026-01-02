@@ -7,6 +7,7 @@ import java.time.LocalDateTime;
 
 @Entity
 @Data
+@Table(name = "\"Notice\"")
 public class Notice {
 
     @Id
@@ -14,7 +15,7 @@ public class Notice {
     private String idNotice;
 
     @ManyToOne(optional = false)
-    @JoinColumn(name = "id_quincailleire")
+    @JoinColumn(name = "id_quincaillerie")
     private Quincaillerie quincaillerie;
 
     @ManyToOne(optional = false)

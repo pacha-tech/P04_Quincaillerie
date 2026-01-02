@@ -3,6 +3,7 @@ package com.ict300.P04;
 import com.ict300.P04.Entite.Price;
 import com.ict300.P04.repository.interfaces.favoriteQuincaillerie.FavoriteQuincaillerieInterface;
 import com.ict300.P04.repository.interfaces.price.PriceInterface;
+import com.ict300.P04.repository.interfaces.user.UserInterface;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.CommandLineRunner;
 import org.springframework.boot.SpringApplication;
@@ -20,6 +21,9 @@ public class P04Application implements CommandLineRunner {
 	@Autowired
 	private FavoriteQuincaillerieInterface favoriteQuincaillerieInterface;
 
+	@Autowired
+	private UserInterface userInterface;
+
 	public static void main(String[] args) {
 		SpringApplication.run(P04Application.class, args);
 	}
@@ -33,12 +37,14 @@ public class P04Application implements CommandLineRunner {
 		try {
 			List<Price> prices = priceInterface.searchAdvanced("ciment", null, null, maxPrice);
 			long countFavorite = favoriteQuincaillerieInterface.count();
+			boolean ifExist = userInterface.existsByName("pacha");
 
 			if (prices.isEmpty()) {
 				System.out.println("Aucun résultat trouvé avec ces critères.");
 			} else {
 				System.out.println("Résultats trouvés : " + prices.size());
 				System.out.println("Résultats trouvés dans favorie : " + countFavorite);
+				System.out.println("l'Utilisateur avec le nom pacha existe ? : " + ifExist);
 
 				for (Price p : prices) {
 					System.out.println("Prix : " + p.getPrice() +

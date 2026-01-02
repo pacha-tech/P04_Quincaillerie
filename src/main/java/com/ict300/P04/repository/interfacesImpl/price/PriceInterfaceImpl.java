@@ -1,4 +1,4 @@
-package com.ict300.P04.repository.interfacesImpl;
+package com.ict300.P04.repository.interfacesImpl.price;
 
 import com.ict300.P04.Entite.Price;
 import com.ict300.P04.repository.interfaces.price.PriceCustomInterface;
