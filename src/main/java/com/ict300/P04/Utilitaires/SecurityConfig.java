@@ -16,7 +16,11 @@ public class SecurityConfig {
         http
                 .csrf(csrf -> csrf.disable())
                 .authorizeHttpRequests(auth -> auth
-                        .requestMatchers("/quincaillerie/**").permitAll()
+                        .requestMatchers("/quincaillerie/auth/**").permitAll()
+                        .requestMatchers("/auth/**").permitAll()
+
+                        // 2. Autorisez explicitement les méthodes OPTIONS (utilisées par React/Flutter)
+                        .requestMatchers(org.springframework.http.HttpMethod.OPTIONS, "/**").permitAll()
                         .requestMatchers("/v3/api-docs/**",
                                                    "/swagger-ui/**",
                                                    "/swagger-ui.html").permitAll()

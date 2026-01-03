@@ -4,10 +4,12 @@ import com.ict300.P04.DTO.price.response.PriceSearchProductDTO;
 import com.ict300.P04.DTO.product.response.SearchProductDTO;
 import com.ict300.P04.repository.interfaces.product.ProductInterface;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
 
 import java.util.List;
 
-public class SearchProductController {
+@Service
+public class SearchProductService {
     @Autowired
     private ProductInterface productInterface;
 

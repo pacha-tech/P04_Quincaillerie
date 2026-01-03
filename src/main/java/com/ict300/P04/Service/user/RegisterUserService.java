@@ -13,7 +13,7 @@ import java.time.LocalDateTime;
 import java.util.List;
 
 @Service
-public class RegisterUser {
+public class RegisterUserService {
     @Autowired
     private UserInterface userInterface;
 
@@ -36,12 +36,13 @@ public class RegisterUser {
         newUser.setRegistrationDate(LocalDateTime.now());
         newUser.setLastLogin(LocalDateTime.now());
         newUser.setPasswordHash(passwordEncoder.encode(registerUserDTO.getPassword()));
-        newUser.setRole("CLIENT");
+        newUser.setRole("UTILISATEUR");
         newUser.setStatus("ACTIF");
 
         userInterface.save(newUser);
     }
 
+    /*
     public List<getAllUserDTO> getAllUSers(){
         return userInterface.findAll().stream().map(user -> new getAllUserDTO(
                 user.getIdUser(),
@@ -52,4 +53,5 @@ public class RegisterUser {
                 user.getRole()
         )).toList();
     }
+     */
 }

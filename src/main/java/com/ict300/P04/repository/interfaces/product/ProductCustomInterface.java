@@ -1,4 +1,8 @@
 package com.ict300.P04.repository.interfaces.product;
 
-public class ProductCustomInterface {
+import com.ict300.P04.Entite.Product;
+
+import java.util.List;
+
+public interface ProductCustomInterface {
 }

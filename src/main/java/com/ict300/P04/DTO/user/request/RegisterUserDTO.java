@@ -26,5 +26,13 @@ public class RegisterUserDTO {
     private String role;
     private String imageUrl;
 
+    public RegisterUserDTO(String name , String phone , String email , String password , String role){
+        this.name = name;
+        this.phone = phone;
+        this.email = email;
+        this.password = password;
+        this.role = role;
+    }
+
     public RegisterUserDTO(){}
 }

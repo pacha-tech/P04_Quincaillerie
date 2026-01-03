@@ -3,6 +3,7 @@ package com.ict300.P04;
 import com.ict300.P04.Entite.Price;
 import com.ict300.P04.repository.interfaces.favoriteQuincaillerie.FavoriteQuincaillerieInterface;
 import com.ict300.P04.repository.interfaces.price.PriceInterface;
+import com.ict300.P04.repository.interfaces.product.ProductInterface;
 import com.ict300.P04.repository.interfaces.user.UserInterface;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.CommandLineRunner;
@@ -23,6 +24,9 @@ public class P04Application implements CommandLineRunner {
 
 	@Autowired
 	private UserInterface userInterface;
+
+	@Autowired
+	private ProductInterface productInterface;
 
 	public static void main(String[] args) {
 		SpringApplication.run(P04Application.class, args);
@@ -45,6 +49,7 @@ public class P04Application implements CommandLineRunner {
 				System.out.println("Résultats trouvés : " + prices.size());
 				System.out.println("Résultats trouvés dans favorie : " + countFavorite);
 				System.out.println("l'Utilisateur avec le nom pacha existe ? : " + ifExist);
+				System.out.println("le nombre de ciment est : "+productInterface.findByNameContainingIgnoreCase("ciment").size());
 
 				for (Price p : prices) {
 					System.out.println("Prix : " + p.getPrice() +
