@@ -22,7 +22,7 @@ public class SecurityConfig {
 
                         // 2. Autorisez explicitement les méthodes OPTIONS (utilisées par React/Flutter)
                         .requestMatchers(org.springframework.http.HttpMethod.OPTIONS, "/**").permitAll()
-                        .requestMatchers("https://p04-quincaillerie.onrender.com/").permitAll()
+                        .requestMatchers("/p04-quincaillerie.onrender.com/").permitAll()
                         .requestMatchers("/v3/api-docs/**",
                                                    "/swagger-ui/**",
                                                    "/swagger-ui.html").permitAll()
