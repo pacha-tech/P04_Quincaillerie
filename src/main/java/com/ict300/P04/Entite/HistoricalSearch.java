@@ -10,7 +10,7 @@ import java.time.LocalDateTime;
 @Table(name = "\"Historical_search\"")
 public class HistoricalSearch {
     @Id
-    @Column(name = "id_search")
+    @Column(name = "id_search" , length = 10)
     private String idHistoricalSearch;
 
     @ManyToOne

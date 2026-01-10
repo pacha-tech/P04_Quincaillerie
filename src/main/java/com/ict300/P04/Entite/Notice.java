@@ -11,7 +11,7 @@ import java.time.LocalDateTime;
 public class Notice {
 
     @Id
-    @Column(name = "id_notice")
+    @Column(name = "id_notice" , length = 10)
     private String idNotice;
 
     @ManyToOne(optional = false)

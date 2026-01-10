@@ -13,7 +13,7 @@ import java.util.List;
 @Table(name = "\"Quincaillerie\"")
 public class Quincaillerie {
     @Id
-    @Column(name = "id_quincaillerie")
+    @Column(name = "id_quincaillerie" , length = 10)
     private String idQuincaillerie;
 
     @OneToOne

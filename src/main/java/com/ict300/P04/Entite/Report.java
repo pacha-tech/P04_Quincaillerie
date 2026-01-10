@@ -9,7 +9,7 @@ import java.time.LocalDateTime;
 @Data
 public class Report {
     @Id
-    @Column(name = "id_report")
+    @Column(name = "id_report" , length = 10)
     private String idReport;
 
     @ManyToOne

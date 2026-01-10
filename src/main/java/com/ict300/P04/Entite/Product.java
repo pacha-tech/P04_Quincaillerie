@@ -11,7 +11,7 @@ import java.util.List;
 @Table(name = "\"Product\"")
 public class Product {
     @Id
-    @Column(name = "id_product")
+    @Column(name = "id_product" , length = 10)
     private String idProduct;
 
     @ManyToOne

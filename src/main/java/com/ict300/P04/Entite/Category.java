@@ -11,7 +11,7 @@ import java.util.List;
 @Table(name = "\"Category\"")
 public class Category {
     @Id
-    @Column(name = "id_category")
+    @Column(name = "id_category" , length = 10)
     private String idCategory;
 
     @Column(name = "Description")

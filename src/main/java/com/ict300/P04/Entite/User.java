@@ -12,7 +12,7 @@ import java.util.List;
 @Table(name = "\"User\"")
 public class User {
     @Id
-    @Column(name = "id_user")
+    @Column(name = "id_user" , length = 10)
     private String idUser;
 
     @Column(name = "Name")

@@ -10,7 +10,7 @@ import java.time.LocalDateTime;
 @Table(name = "\"Favorite_quincaillerie\"")
 public class FavoriteQuincaillerie {
     @Id
-    @Column(name = "id_favorite_quincaillerie")
+    @Column(name = "id_favorite_quincaillerie" , length = 10)
     private String idFavoriteQuincaillerie;
 
     @ManyToOne
