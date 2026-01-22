@@ -15,9 +15,12 @@ public class SearchProductService {
 
     public List<SearchProductDTO> SearchProductByName(String name) {
         return productInterface.findByNameContainingIgnoreCase(name).stream().map(product -> new SearchProductDTO(
+                product.getIdProduct(),
+                product.getCategory().getIdCategory(),
                 product.getName(),
                 product.getPrices().stream().map(price -> new PriceSearchProductDTO(
                         price.getQuincaillerie().getStoreName(),
+                        price.getQuincaillerie().getIdQuincaillerie(),
                         price.getPrice(),
                         price.getStock(),
                         price.getPromotionRating(),
