@@ -7,14 +7,16 @@ import java.math.BigDecimal;
 @Data
 public class PriceSearchProductDTO {
     private String quincaillerieName;
+    private String idQuincaillerie;
     private BigDecimal price;
     private String stock;
     private String promotionRating;
     private BigDecimal latitudeQuincaillerie;
     private BigDecimal longitudeQuincaillerie;
 
-    public PriceSearchProductDTO(String quincaillerieNAme , BigDecimal price , String stock , String promotionRating , BigDecimal latitudeQuincaillerie , BigDecimal longitudeQuincaillerie){
-        this.quincaillerieName = quincaillerieNAme;
+    public PriceSearchProductDTO(String quincaillerieName , String idQuincaillerie , BigDecimal price , String stock , String promotionRating , BigDecimal latitudeQuincaillerie , BigDecimal longitudeQuincaillerie){
+        this.quincaillerieName = quincaillerieName;
+        this.idQuincaillerie = idQuincaillerie;
         this.price = price;
         this.stock = stock;
         this.promotionRating = promotionRating;
