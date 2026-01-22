@@ -1,0 +1,26 @@
+package com.ict300.P04.repository.interfacesImpl.quincaillerie;
+
+import com.ict300.P04.repository.interfaces.quincaillerie.QuincaillerieCustomInterface;
+import jakarta.persistence.EntityManager;
+import jakarta.persistence.PersistenceContext;
+import org.springframework.stereotype.Repository;
+
+import java.util.List;
+
+@Repository
+public class QuincaillerieInterfaceImpl implements QuincaillerieCustomInterface {
+    @PersistenceContext
+    private EntityManager entityManager;
+
+    @Override
+    public List<String> findNameOnly(String name) {
+        String jpql = "SELECT DISTINCT q.storeName " +
+                "FROM Quincaillerie q " +
+                "WHERE LOWER(q.storeName) LIKE LOWER(CONCAT('%', :query, '%'))";
+
+        return entityManager.createQuery(jpql , String.class)
+                .setParameter("query",name)
+                .setMaxResults(3)
+                .getResultList();
+    }
+}
