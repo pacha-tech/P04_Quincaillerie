@@ -6,5 +6,6 @@ import org.springframework.stereotype.Repository;
 
 @Repository
 public interface FavoriteQuincaillerieInterface extends JpaRepository<FavoriteQuincaillerie , String> , FavoriteQuincaillerieCustomInterface {
-
+    boolean existsByUserIdUserAndQuincaillerieIdQuincaillerie(String idUser, String idQuincaillerie);
+    void deleteByUserIdUserAndQuincaillerieIdQuincaillerie(String idUser, String idQuincaillerie);
 }

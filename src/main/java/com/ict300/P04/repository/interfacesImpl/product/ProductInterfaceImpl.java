@@ -42,4 +42,16 @@ public class ProductInterfaceImpl implements ProductCustomInterface {
                 .setParameter("quinId",quincaillerieId)
                 .getSingleResult();
     }
+
+    @Override
+    public List<String> findNameOnly(String name) {
+        String jpql = "SELECT DISTINCT p.name " +
+                "FROM Product p " +
+                "WHERE LOWER(p.name) LIKE LOWER(CONCAT('%', :query, '%'))";
+
+        return entityManager.createQuery(jpql , String.class)
+                .setParameter("query" , name)
+                .setMaxResults(5)
+                .getResultList();
+    }
 }

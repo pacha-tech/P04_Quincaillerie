@@ -10,7 +10,7 @@ public class GenerateID {
     private static final String ALPHABET = "0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz";
     private static final SecureRandom RANDOM = new SecureRandom();
 
-    public String GenerateUserID() {
+    public static String GenerateUserID() {
         StringBuilder sb = new StringBuilder("USER");
         for (int i = 0; i < 6; i++) {
             sb.append(ALPHABET.charAt(RANDOM.nextInt(ALPHABET.length())));
@@ -18,7 +18,7 @@ public class GenerateID {
         return sb.toString();
     }
 
-    public String GenerateQuincaillerieID() {
+    public static String GenerateQuincaillerieID() {
         StringBuilder sb = new StringBuilder("QUIN");
         for (int i = 0; i < 6; i++) {
             sb.append(ALPHABET.charAt(RANDOM.nextInt(ALPHABET.length())));
@@ -34,7 +34,7 @@ public class GenerateID {
         return sb.toString();
     }
 
-    public String GenerateCategoryID() {
+    public static String GenerateCategoryID() {
         StringBuilder sb = new StringBuilder("CATE");
         for (int i = 0; i < 6; i++) {
             sb.append(ALPHABET.charAt(RANDOM.nextInt(ALPHABET.length())));
@@ -42,7 +42,7 @@ public class GenerateID {
         return sb.toString();
     }
 
-    public String GeneratePriceID() {
+    public static String GeneratePriceID() {
         StringBuilder sb = new StringBuilder("PRICE");
         for (int i = 0; i < 5; i++) {
             sb.append(ALPHABET.charAt(RANDOM.nextInt(ALPHABET.length())));
@@ -50,8 +50,16 @@ public class GenerateID {
         return sb.toString();
     }
 
-    public String GenerateReportID() {
+    public static String GenerateReportID() {
         StringBuilder sb = new StringBuilder("REPO");
+        for (int i = 0; i < 6; i++) {
+            sb.append(ALPHABET.charAt(RANDOM.nextInt(ALPHABET.length())));
+        }
+        return sb.toString();
+    }
+
+    public static String GenerateFavoriteQuincaillerieID() {
+        StringBuilder sb = new StringBuilder("FAQU");
         for (int i = 0; i < 6; i++) {
             sb.append(ALPHABET.charAt(RANDOM.nextInt(ALPHABET.length())));
         }

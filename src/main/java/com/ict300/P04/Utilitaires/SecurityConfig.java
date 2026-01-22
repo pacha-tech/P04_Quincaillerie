@@ -24,6 +24,7 @@ public class SecurityConfig {
                         // 2. Tes routes spécifiques
                         .requestMatchers("/quincaillerie/auth/**").permitAll()
                         .requestMatchers("/quincaillerie/products/**").permitAll()
+                        .requestMatchers("/quincaillerie/favorite/**").permitAll()
                         .requestMatchers("/auth/**").permitAll()
 
                         // 3. Swagger et Documentation

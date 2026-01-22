@@ -19,9 +19,6 @@ public class AuthUserService {
     private UserInterface userInterface;
 
     @Autowired
-    private GenerateID generateID;
-
-    @Autowired
     private PasswordEncoder passwordEncoder;
 
     public void register(RegisterUserDTO registerUserDTO){
@@ -33,7 +30,7 @@ public class AuthUserService {
         }
         User newUser = new User();
 
-        newUser.setIdUser(generateID.GenerateUserID());
+        newUser.setIdUser(GenerateID.GenerateUserID());
         newUser.setName(registerUserDTO.getName());
         newUser.setPhone(registerUserDTO.getPhone());
         newUser.setEmail(registerUserDTO.getEmail());
