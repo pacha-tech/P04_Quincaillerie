@@ -65,4 +65,12 @@ public class GenerateID {
         }
         return sb.toString();
     }
+
+    public static String GenerateFavoriteProductID() {
+        StringBuilder sb = new StringBuilder("FAPR");
+        for (int i = 0; i < 6; i++) {
+            sb.append(ALPHABET.charAt(RANDOM.nextInt(ALPHABET.length())));
+        }
+        return sb.toString();
+    }
 }

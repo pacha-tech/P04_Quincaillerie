@@ -9,4 +9,5 @@ public interface ProductCustomInterface {
     List<Product> findRecommendationByProductAndCategoryAndQuincaillerie(String categoryId, String productId , String quincaillerieId);
     BigDecimal findPriceByQuincaillerie(String productId , String quincaillerieId);
     List<String> findNameOnly(String name);
+    Product getProduct(String idProduct);
 }

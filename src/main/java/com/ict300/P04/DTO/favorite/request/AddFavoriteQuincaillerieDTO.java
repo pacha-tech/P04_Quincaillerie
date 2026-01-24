@@ -10,4 +10,11 @@ public class AddFavoriteQuincaillerieDTO {
 
     @NotBlank
     private String idQuincaillerie;
+
+    public AddFavoriteQuincaillerieDTO(String idUser , String idQuincaillerie){
+        this.idUser = idUser;
+        this.idQuincaillerie = idQuincaillerie;
+    }
+
+    public AddFavoriteQuincaillerieDTO(){}
 }

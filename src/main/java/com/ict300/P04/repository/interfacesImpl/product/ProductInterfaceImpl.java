@@ -54,4 +54,15 @@ public class ProductInterfaceImpl implements ProductCustomInterface {
                 .setMaxResults(5)
                 .getResultList();
     }
+
+    @Override
+    public Product getProduct(String idProduct) {
+        String jpql = "SELECT p " +
+                "FROM Product p " +
+                "WHERE p.idProduct = :id ";
+
+        return entityManager.createQuery(jpql , Product.class)
+                .setParameter("id",idProduct)
+                .getSingleResult();
+    }
 }
