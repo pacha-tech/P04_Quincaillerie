@@ -3,7 +3,7 @@ package com.ict300.P04.DTO.user.response;
 import lombok.Data;
 
 @Data
-public class getAllUserDTO {
+public class AllUserDTO {
 
     private  String idUser;
     private String name;
@@ -12,7 +12,7 @@ public class getAllUserDTO {
     private String password;
     private String role;
 
-    public getAllUserDTO(String idUser , String name , String phone , String email , String password , String role){
+    public AllUserDTO(String idUser , String name , String phone , String email , String password , String role){
         this.idUser = idUser;
         this.name = name;
         this.phone = phone;
@@ -21,5 +21,5 @@ public class getAllUserDTO {
         this.role = role;
     }
 
-    public getAllUserDTO(){}
+    public AllUserDTO(){}
 }

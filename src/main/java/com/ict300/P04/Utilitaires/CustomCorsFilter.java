@@ -11,7 +11,8 @@ import jakarta.servlet.*;
 
 @Component
 @Order(1)
-public class CorsFilter implements Filter {
+
+public class CustomCorsFilter implements Filter {
 
     @Override
     public void doFilter(ServletRequest req, ServletResponse res, FilterChain chain) throws IOException, ServletException {

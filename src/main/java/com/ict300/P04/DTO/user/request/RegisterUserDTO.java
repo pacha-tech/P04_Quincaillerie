@@ -18,19 +18,16 @@ public class RegisterUserDTO {
     @NotBlank(message = "l'Email est obligatoire")
     private String email;
 
-    @Size(min = 8 ,message = "Le mot de passe doit avoir minimum 8 caracteres")
-    @NotBlank(message = "Le mot de passe est obligatoire")
-    private String password;
-    private String passwordConfirmer;
+    private String id_user;
 
     private String role;
     private String imageUrl;
 
-    public RegisterUserDTO(String name , String phone , String email , String password , String role){
+    public RegisterUserDTO(String name , String phone , String email , String id_user , String role){
         this.name = name;
         this.phone = phone;
         this.email = email;
-        this.password = password;
+        this.id_user = id_user;
         this.role = role;
     }
 

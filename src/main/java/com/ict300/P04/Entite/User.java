@@ -12,7 +12,7 @@ import java.util.List;
 @Table(name = "\"User\"")
 public class User {
     @Id
-    @Column(name = "id_user" , length = 10)
+    @Column(name = "id_user" , length = 128)
     private String idUser;
 
     @Column(name = "Name")
@@ -30,8 +30,8 @@ public class User {
     @Column(name = "Last_login")
     private LocalDateTime lastLogin;
 
-    @Column(name = "Password")
-    private String password;
+    //@Column(name = "Password")
+    //private String password;
 
     @Column(name = "Role")
     private String role;

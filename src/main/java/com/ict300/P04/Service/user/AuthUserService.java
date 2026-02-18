@@ -25,18 +25,20 @@ public class AuthUserService {
         if(userInterface.existsByName(registerUserDTO.getName())){
             throw new RuntimeException("Nom d'utilisateur deja pris");
         }
+        /*
         if(Objects.equals(registerUserDTO.getPassword(), registerUserDTO.getPasswordConfirmer())){
             throw new RuntimeException("Le mot de passe doit etre le meme ");
         }
+         */
         User newUser = new User();
 
-        newUser.setIdUser(GenerateID.GenerateUserID());
+        newUser.setIdUser(registerUserDTO.getId_user());
         newUser.setName(registerUserDTO.getName());
         newUser.setPhone(registerUserDTO.getPhone());
         newUser.setEmail(registerUserDTO.getEmail());
         newUser.setRegistrationDate(LocalDateTime.now());
         newUser.setLastLogin(LocalDateTime.now());
-        newUser.setPassword(passwordEncoder.encode(registerUserDTO.getPassword()));
+        //newUser.setPassword(passwordEncoder.encode(registerUserDTO.getPassword()));
         newUser.setRole("UTILISATEUR");
         newUser.setStatus("ACTIF");
 
@@ -48,7 +50,7 @@ public class AuthUserService {
 
         if(userOpt.isPresent()) {
             User user = userOpt.get();
-            return passwordEncoder.matches(loginUserDTO.getPassword() , user.getPassword());
+            //return passwordEncoder.matches(loginUserDTO.getPassword() , user.getPassword());
         }
         return false;
     }
