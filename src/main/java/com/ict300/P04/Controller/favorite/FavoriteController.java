@@ -1,6 +1,7 @@
 package com.ict300.P04.Controller.favorite;
 
 
+import com.ict300.P04.DTO.favorite.request.AddFavoriteProductDTO;
 import com.ict300.P04.DTO.favorite.request.AddFavoriteQuincaillerieDTO;
 import com.ict300.P04.DTO.favorite.request.DeleteFavoriteProductDTO;
 import com.ict300.P04.DTO.favorite.request.DeleteFavoriteQuincaillerieDTO;
@@ -34,14 +35,12 @@ public class FavoriteController {
         return ResponseEntity.ok("Quincaillerie supprimé des favoris avec succes");
     }
 
-    /*
     @PostMapping("/addProductFavorite")
     @Operation(summary = "Mettre un produit en favoris")
-    public ResponseEntity<?> addProductFavorite(@Valid @RequestBody AddFavoriteProductDTO addFavoriteProductDTO){
+    public ResponseEntity<?> addProductFavorite(@Valid @RequestBody AddFavoriteProductDTO addFavoriteProductDTO) {
         favoriteService.addFavoriteProduct(addFavoriteProductDTO);
         return ResponseEntity.ok("Produit mis en favoris avec succes");
     }
-     */
 
     @DeleteMapping("/deleteProductFavorite")
     @Operation(summary = "Supprimer un produit des favoris")

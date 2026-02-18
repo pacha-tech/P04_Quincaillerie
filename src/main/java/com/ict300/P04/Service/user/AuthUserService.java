@@ -1,5 +1,7 @@
 package com.ict300.P04.Service.user;
 
+import com.google.firebase.auth.FirebaseAuth;
+import com.google.firebase.auth.FirebaseAuthException;
 import com.ict300.P04.DTO.user.request.LoginUserDTO;
 import com.ict300.P04.DTO.user.request.RegisterUserDTO;
 import com.ict300.P04.Entite.User;
@@ -10,6 +12,8 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
+import java.util.HashMap;
+import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
 
@@ -39,10 +43,20 @@ public class AuthUserService {
         newUser.setRegistrationDate(LocalDateTime.now());
         newUser.setLastLogin(LocalDateTime.now());
         //newUser.setPassword(passwordEncoder.encode(registerUserDTO.getPassword()));
-        newUser.setRole("UTILISATEUR");
+        newUser.setRole("CLIENT");
         newUser.setStatus("ACTIF");
 
         userInterface.save(newUser);
+
+        Map<String, Object> claims = new HashMap<>();
+        claims.put("role", registerUserDTO.getRole()); // "VENDEUR" ou "CLIENT"
+
+        try {
+            FirebaseAuth.getInstance().setCustomUserClaims(registerUserDTO.getId_user(), claims);
+            System.out.println("✅ Rôle " + registerUserDTO.getRole() + " ajouté au Token Firebase");
+        } catch (FirebaseAuthException e) {
+            System.err.println("❌ Erreur Claims : " + e.getMessage());
+        }
     }
 
     public boolean login(LoginUserDTO loginUserDTO){

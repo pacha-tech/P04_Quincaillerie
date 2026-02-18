@@ -9,9 +9,8 @@ import org.springframework.security.config.annotation.web.configurers.AbstractHt
 import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.http.HttpMethod;
-import com.ict300.P04.Utilitaires.FirebaseFilter; // Vérifie que le package est exact
-import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
+
 
 @Configuration
 @EnableWebSecurity
@@ -40,7 +39,7 @@ public class SecurityConfig {
                         .anyRequest().authenticated()
                 )
                 // 2. TRÈS IMPORTANT : Désactiver les mécanismes d'authentification par défaut
-                .addFilterBefore(new FirebaseFilter(), org.springframework.security.web.authentication.UsernamePasswordAuthenticationToken.class)
+                .addFilterBefore(new FirebaseFilter(), UsernamePasswordAuthenticationFilter.class)
                 .formLogin(AbstractHttpConfigurer::disable)
                 .httpBasic(AbstractHttpConfigurer::disable) // REMPLACÉ ICI
 

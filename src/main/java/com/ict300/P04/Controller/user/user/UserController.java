@@ -6,7 +6,6 @@ import io.swagger.v3.oas.annotations.tags.Tag;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.context.SecurityContextHolder;
-import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
@@ -14,7 +13,7 @@ import org.springframework.web.bind.annotation.RestController;
 
 @RestController
 @RequestMapping("/quincaillerie/users")
-@CrossOrigin(origins = "*") // Pour autoriser l'appel de ton téléphone
+@Tag(name = "AuthentificationUser", description = "l'Inscription et la connexion des utilisateurs(client)")
 public class UserController {
 
     @Autowired
@@ -27,9 +26,9 @@ public class UserController {
 
         UserInfosDTO userInfosDTO = userService.getUserInfo(uid);
         if (userInfosDTO != null) {
-            return ResponseEntity.ok(userService);
+            System.out.println(userInfosDTO);
+            return ResponseEntity.ok(userInfosDTO);
         } else {
-            //return ResponseEntity.status(404).body("Utilisateur non trouvé dans MySQL");
             return null;
         }
     }
