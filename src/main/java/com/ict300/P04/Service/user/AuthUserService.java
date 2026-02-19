@@ -42,14 +42,14 @@ public class AuthUserService {
         newUser.setEmail(registerUserDTO.getEmail());
         newUser.setRegistrationDate(LocalDateTime.now());
         newUser.setLastLogin(LocalDateTime.now());
-        //newUser.setPassword(passwordEncoder.encode(registerUserDTO.getPassword()));
-        newUser.setRole("CLIENT");
+        String roleSet = (registerUserDTO.getRole() != null) ? registerUserDTO.getRole() : "CLIENT";
+        newUser.setRole(roleSet);
         newUser.setStatus("ACTIF");
 
         userInterface.save(newUser);
 
         Map<String, Object> claims = new HashMap<>();
-        claims.put("role", registerUserDTO.getRole()); // "VENDEUR" ou "CLIENT"
+        claims.put("role", roleSet); // "VENDEUR" ou "CLIENT"
 
         try {
             FirebaseAuth.getInstance().setCustomUserClaims(registerUserDTO.getId_user(), claims);
