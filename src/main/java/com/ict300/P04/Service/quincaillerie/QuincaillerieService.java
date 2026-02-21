@@ -36,9 +36,11 @@ public class QuincaillerieService {
     }
 
     public void registerQuincaillerie(RegisterQuincaillerieDTO registerQuincaillerieDTO){
+        /*
         if(quincaillerieInterface.existsByStoreName(registerQuincaillerieDTO.getStoreName())){
             throw new RuntimeException("Nom de quincaillerie deja pris");
         }
+        */
 
         Quincaillerie newQuincaillerie = new Quincaillerie();
         User admin = userInterface.getByIdUser(registerQuincaillerieDTO.getIdUser());
@@ -60,8 +62,8 @@ public class QuincaillerieService {
         newQuincaillerie.setPhotoUrl(registerQuincaillerieDTO.getPhotoUrl());
         newQuincaillerie.setStatus("ACTIF");
         newQuincaillerie.setNui(registerQuincaillerieDTO.getNui());
-        newQuincaillerie.setAcceptTerms(registerQuincaillerieDTO.isAcceptTerms());
-        newQuincaillerie.setWantTips(registerQuincaillerieDTO.isWantTips());
+        newQuincaillerie.setAcceptTerms(registerQuincaillerieDTO.getAcceptTerms());
+        newQuincaillerie.setWantTips(registerQuincaillerieDTO.getWantTips());
 
         quincaillerieInterface.save(newQuincaillerie);
     }

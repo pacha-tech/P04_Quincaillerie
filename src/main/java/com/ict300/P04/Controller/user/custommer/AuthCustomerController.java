@@ -17,11 +17,11 @@ public class AuthCustomerController {
     @Autowired
     private AuthCustomerService authCustomerService;
 
-    @PostMapping("/registerUser")
-    @Operation(summary = "Inscription d'utilisateur")
+    @PostMapping("/registerCustomer")
+    @Operation(summary = "Inscription d'un client")
     public ResponseEntity<?> registerUSer(@Valid @RequestBody RegisterCustomerDTO request) {
         authCustomerService.register(request);
-        return ResponseEntity.ok("Incription Reussis");
+        return ResponseEntity.ok("Incription Reussis d'un client");
     }
 
     /*

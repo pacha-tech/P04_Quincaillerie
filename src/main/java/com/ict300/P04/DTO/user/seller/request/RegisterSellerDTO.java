@@ -6,11 +6,11 @@ import lombok.Data;
 
 @Data
 public class RegisterSellerDTO {
-    private RegisterCustomerDTO customer;
+    private RegisterCustomerDTO user;
     private RegisterQuincaillerieDTO quincaillerie;
 
-    public RegisterSellerDTO(RegisterCustomerDTO customer , RegisterQuincaillerieDTO quincaillerie){
-        this.customer = customer;
+    public RegisterSellerDTO(RegisterCustomerDTO user , RegisterQuincaillerieDTO quincaillerie){
+        this.user = user;
         this.quincaillerie = quincaillerie;
     }
 

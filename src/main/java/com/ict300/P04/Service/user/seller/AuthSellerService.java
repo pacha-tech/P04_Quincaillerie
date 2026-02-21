@@ -20,7 +20,7 @@ public class AuthSellerService {
 
     @Transactional
     public void registerSeller(RegisterSellerDTO registerSellerDTO){
-        authCustomerService.register(registerSellerDTO.getCustomer());
+        authCustomerService.register(registerSellerDTO.getUser());
         quincaillerieService.registerQuincaillerie(registerSellerDTO.getQuincaillerie());
     }
 }

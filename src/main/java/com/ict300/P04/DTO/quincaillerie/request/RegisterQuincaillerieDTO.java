@@ -22,10 +22,10 @@ public class RegisterQuincaillerieDTO {
     private BigDecimal longitude;
     private String phone;
     private String nui;
-    private boolean acceptTerms;
-    private boolean wantTips;
+    private Boolean acceptTerms;
+    private Boolean wantTips;
 
-    public RegisterQuincaillerieDTO(String idUser , String storeName , String region , String ville , String quartier , String precision , String photoUrl , String description , BigDecimal latitude , BigDecimal longitude , String phone ,String nui , boolean acceptTerms , boolean wantTips) {
+    public RegisterQuincaillerieDTO(String idUser , String storeName , String region , String ville , String quartier , String precision , String photoUrl , String description , BigDecimal latitude , BigDecimal longitude , String phone ,String nui , Boolean acceptTerms , Boolean wantTips) {
         this.idUser = idUser;
         this.storeName = storeName;
         this.region = region;

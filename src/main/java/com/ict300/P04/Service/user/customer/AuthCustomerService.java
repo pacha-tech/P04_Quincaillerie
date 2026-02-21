@@ -22,9 +22,12 @@ public class AuthCustomerService {
     private PasswordEncoder passwordEncoder;
 
     public void register(RegisterCustomerDTO registerUserDTO){
+        /*
         if(userInterface.existsByName(registerUserDTO.getName())){
             throw new RuntimeException("Nom d'utilisateur deja pris");
         }
+
+         */
 
         User newUser = new User();
 
