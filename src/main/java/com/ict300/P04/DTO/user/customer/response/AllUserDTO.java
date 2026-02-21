@@ -1,4 +1,4 @@
-package com.ict300.P04.DTO.user.response;
+package com.ict300.P04.DTO.user.customer.response;
 
 import lombok.Data;
 

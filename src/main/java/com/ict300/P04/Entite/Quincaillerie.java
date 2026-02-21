@@ -1,5 +1,6 @@
 package com.ict300.P04.Entite;
 
+import com.google.type.Decimal;
 import jakarta.persistence.*;
 import lombok.Data;
 
@@ -32,11 +33,26 @@ public class Quincaillerie {
     @Column(name = "Phone")
     private String phone;
 
-    @Column(name = "Address")
-    private String adress;
+    @Column(name = "Region")
+    private String region;
+
+    @Column(name = "Description")
+    private String description;
+
+    @Column(name = "`Precision`")
+    private String precision;
 
     @Column(name = "Notice_count")
     private int noticeCount;
+
+    @Column(name = "NUI")
+    private String nui;
+
+    @Column(name = "Accept_terms")
+    private Boolean acceptTerms = false;
+
+    @Column(name = "Want_tips")
+    private Boolean wantTips = false ;
 
     @Column(name = "Creation_date")
     private LocalDateTime creationDate;

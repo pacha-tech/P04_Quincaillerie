@@ -10,7 +10,7 @@ import com.ict300.P04.repository.interfaces.favoriteProduct.FavoriteProductInter
 import com.ict300.P04.repository.interfaces.favoriteQuincaillerie.FavoriteQuincaillerieInterface;
 import com.ict300.P04.repository.interfaces.product.ProductInterface;
 import com.ict300.P04.repository.interfaces.quincaillerie.QuincaillerieInterface;
-import com.ict300.P04.repository.interfaces.user.UserInterface;
+import com.ict300.P04.repository.interfaces.user.customer.CustomerInterface;
 import jakarta.transaction.Transactional;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -32,7 +32,7 @@ public class FavoriteService {
     private ProductInterface productInterface;
 
     @Autowired
-    private UserInterface userInterface;
+    private CustomerInterface userInterface;
 
     public void addFavoriteQuincaillerie(AddFavoriteQuincaillerieDTO addFavoriteQuincaillerieDTO){
 
@@ -40,7 +40,7 @@ public class FavoriteService {
             throw new RuntimeException("Quincaillerie deja en favoris");
         }
 
-        User user = userInterface.getUser(addFavoriteQuincaillerieDTO.getIdUser());
+        User user = userInterface.getByIdUser(addFavoriteQuincaillerieDTO.getIdUser());
         Quincaillerie quincaillerie = quincaillerieInterface.getQuincaillerie(addFavoriteQuincaillerieDTO.getIdQuincaillerie());
 
         FavoriteQuincaillerie favoriteQuincaillerie = new FavoriteQuincaillerie();
@@ -69,7 +69,7 @@ public class FavoriteService {
             throw new RuntimeException("Produit deja en favoris");
         }
 
-        User user = userInterface.getUser(addFavoriteProductDTO.getIdUser());
+        User user = userInterface.getByIdUser(addFavoriteProductDTO.getIdUser());
         Product product = productInterface.getProduct(addFavoriteProductDTO.getIdProduct());
 
         FavoriteProduct favoriteProduct = new FavoriteProduct();

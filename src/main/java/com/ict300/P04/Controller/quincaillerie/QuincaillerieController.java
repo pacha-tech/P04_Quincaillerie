@@ -1,18 +1,14 @@
 package com.ict300.P04.Controller.quincaillerie;
 
+import com.ict300.P04.DTO.quincaillerie.request.RegisterQuincaillerieDTO;
 import com.ict300.P04.DTO.quincaillerie.response.QuincaillerieDetailsDTO;
-import com.ict300.P04.DTO.recommadation.response.RecommendedProductDTO;
 import com.ict300.P04.Service.quincaillerie.QuincaillerieService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
+import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.bind.annotation.RestController;
-
-import java.util.List;
+import org.springframework.web.bind.annotation.*;
 
 @RestController
 @RequestMapping("/quincaillerie/quincaillerie")
@@ -28,5 +24,12 @@ public class QuincaillerieController {
         QuincaillerieDetailsDTO detailQuincaillerie = quincaillerieService.getInfoQuincaillerei(idQuincaillerie);
 
         return ResponseEntity.ok(detailQuincaillerie);
+    }
+
+    @PostMapping("/registerQuincaillerie")
+    @Operation(summary = "Enregistrement d'une Quincaillerie")
+    public ResponseEntity<?> registerUSer(@Valid @RequestBody RegisterQuincaillerieDTO registerQuincaillerieDTO) {
+        quincaillerieService.registerQuincaillerie(registerQuincaillerieDTO);
+        return ResponseEntity.ok("Enregistrement de la quincaillerie reussis ");
     }
 }

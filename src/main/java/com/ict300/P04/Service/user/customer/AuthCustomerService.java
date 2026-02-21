@@ -1,12 +1,10 @@
-package com.ict300.P04.Service.user;
+package com.ict300.P04.Service.user.customer;
 
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseAuthException;
-import com.ict300.P04.DTO.user.request.LoginUserDTO;
-import com.ict300.P04.DTO.user.request.RegisterUserDTO;
+import com.ict300.P04.DTO.user.customer.request.RegisterCustomerDTO;
 import com.ict300.P04.Entite.User;
-import com.ict300.P04.Utilitaires.GenerateID;
-import com.ict300.P04.repository.interfaces.user.UserInterface;
+import com.ict300.P04.repository.interfaces.user.customer.CustomerInterface;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
@@ -14,26 +12,20 @@ import org.springframework.stereotype.Service;
 import java.time.LocalDateTime;
 import java.util.HashMap;
 import java.util.Map;
-import java.util.Objects;
-import java.util.Optional;
 
 @Service
-public class AuthUserService {
+public class AuthCustomerService {
     @Autowired
-    private UserInterface userInterface;
+    private CustomerInterface userInterface;
 
     @Autowired
     private PasswordEncoder passwordEncoder;
 
-    public void register(RegisterUserDTO registerUserDTO){
+    public void register(RegisterCustomerDTO registerUserDTO){
         if(userInterface.existsByName(registerUserDTO.getName())){
             throw new RuntimeException("Nom d'utilisateur deja pris");
         }
-        /*
-        if(Objects.equals(registerUserDTO.getPassword(), registerUserDTO.getPasswordConfirmer())){
-            throw new RuntimeException("Le mot de passe doit etre le meme ");
-        }
-         */
+
         User newUser = new User();
 
         newUser.setIdUser(registerUserDTO.getId_user());
@@ -59,13 +51,14 @@ public class AuthUserService {
         }
     }
 
+    /*
     public boolean login(LoginUserDTO loginUserDTO){
         Optional<User> userOpt = userInterface.findByName(loginUserDTO.getUsername());
 
         if(userOpt.isPresent()) {
             User user = userOpt.get();
-            //return passwordEncoder.matches(loginUserDTO.getPassword() , user.getPassword());
         }
         return false;
     }
+     */
 }

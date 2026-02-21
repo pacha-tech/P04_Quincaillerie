@@ -1,12 +1,11 @@
-package com.ict300.P04.DTO.user.request;
+package com.ict300.P04.DTO.user.customer.request;
 
 import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotBlank;
-import jakarta.validation.constraints.Size;
 import lombok.Data;
 
 @Data
-public class RegisterUserDTO {
+public class RegisterCustomerDTO {
 
     @NotBlank(message = "Le Nom est obligatoire")
     private String name;
@@ -23,7 +22,7 @@ public class RegisterUserDTO {
     private String role;
     private String imageUrl;
 
-    public RegisterUserDTO(String name , String phone , String email , String id_user , String role){
+    public RegisterCustomerDTO(String name , String phone , String email , String id_user , String role){
         this.name = name;
         this.phone = phone;
         this.email = email;
@@ -31,5 +30,5 @@ public class RegisterUserDTO {
         this.role = role;
     }
 
-    public RegisterUserDTO(){}
+    public RegisterCustomerDTO(){}
 }

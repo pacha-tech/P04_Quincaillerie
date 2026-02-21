@@ -7,7 +7,7 @@ import com.ict300.P04.DTO.user.request.RegisterUserDTO;
 import com.ict300.P04.Service.user.RegisterUserService;
 import com.ict300.P04.repository.interfaces.favoriteQuincaillerie.FavoriteQuincaillerieInterface;
 import com.ict300.P04.repository.interfaces.price.PriceInterface;
-import com.ict300.P04.repository.interfaces.user.UserInterface;
+import com.ict300.P04.repository.interfaces.user.customer.UserInterface;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.webmvc.test.autoconfigure.AutoConfigureMockMvc;
