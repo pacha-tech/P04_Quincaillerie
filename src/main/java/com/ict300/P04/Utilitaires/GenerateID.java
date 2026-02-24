@@ -26,7 +26,7 @@ public class GenerateID {
         return sb.toString();
     }
 
-    public String GenerateProductID() {
+    public static String GenerateProductID() {
         StringBuilder sb = new StringBuilder("PROD");
         for (int i = 0; i < 6; i++) {
             sb.append(ALPHABET.charAt(RANDOM.nextInt(ALPHABET.length())));

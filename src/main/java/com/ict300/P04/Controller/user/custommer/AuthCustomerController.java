@@ -21,7 +21,7 @@ public class AuthCustomerController {
     @Operation(summary = "Inscription d'un client")
     public ResponseEntity<?> registerUSer(@Valid @RequestBody RegisterCustomerDTO request) {
         authCustomerService.register(request);
-        return ResponseEntity.ok("Incription Reussis d'un client");
+        return ResponseEntity.ok("Incription Reussis du client " + request.getName());
     }
 
     /*

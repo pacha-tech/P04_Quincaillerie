@@ -1,4 +1,7 @@
 package com.ict300.P04.repository.interfaces.user.seller;
 
-public class SellerCustomInterface{
+import com.ict300.P04.Entite.User;
+
+public interface SellerCustomInterface{
+    User getByIdUser(String idUser);
 }

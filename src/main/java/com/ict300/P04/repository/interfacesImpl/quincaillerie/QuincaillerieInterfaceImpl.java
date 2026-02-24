@@ -15,14 +15,11 @@ public class QuincaillerieInterfaceImpl implements QuincaillerieCustomInterface 
     private EntityManager entityManager;
 
     @Override
-    public List<String> findNameOnly(String name) {
+    public List<String> findNameOnly() {
         String jpql = "SELECT DISTINCT q.storeName " +
-                "FROM Quincaillerie q " +
-                "WHERE LOWER(q.storeName) LIKE LOWER(CONCAT('%', :query, '%'))";
+                "FROM Quincaillerie q " ;
 
         return entityManager.createQuery(jpql , String.class)
-                .setParameter("query",name)
-                .setMaxResults(3)
                 .getResultList();
     }
 

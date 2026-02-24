@@ -33,8 +33,11 @@ public class Price {
     @Column(precision = 12 , scale = 2 , name = "Price")
     private BigDecimal price;
 
+    @Column(precision = 12 , scale = 2 , name = "Purchase_price")
+    private BigDecimal purchasePrice;
+
     @Column(name = "Stock")
-    private String stock;
+    private int stock;
 
     @Column(name = "Promotion_rating")
     private String promotionRating;

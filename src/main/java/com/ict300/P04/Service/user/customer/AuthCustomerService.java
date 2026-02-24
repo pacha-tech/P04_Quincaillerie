@@ -3,6 +3,7 @@ package com.ict300.P04.Service.user.customer;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseAuthException;
 import com.ict300.P04.DTO.user.customer.request.RegisterCustomerDTO;
+import com.ict300.P04.Entite.Quincaillerie;
 import com.ict300.P04.Entite.User;
 import com.ict300.P04.repository.interfaces.user.customer.CustomerInterface;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -37,21 +38,24 @@ public class AuthCustomerService {
         newUser.setEmail(registerUserDTO.getEmail());
         newUser.setRegistrationDate(LocalDateTime.now());
         newUser.setLastLogin(LocalDateTime.now());
-        String roleSet = (registerUserDTO.getRole() != null) ? registerUserDTO.getRole() : "CLIENT";
+        String roleSet = registerUserDTO.getRole();
         newUser.setRole(roleSet);
         newUser.setStatus("ACTIF");
 
-        userInterface.save(newUser);
 
-        Map<String, Object> claims = new HashMap<>();
-        claims.put("role", roleSet); // "VENDEUR" ou "CLIENT"
+        if(roleSet.equals("CLIENT")){
+            Map<String, Object> claims = new HashMap<>();
+            claims.put("role", roleSet);
 
-        try {
-            FirebaseAuth.getInstance().setCustomUserClaims(registerUserDTO.getId_user(), claims);
-            System.out.println("✅ Rôle " + registerUserDTO.getRole() + " ajouté au Token Firebase");
-        } catch (FirebaseAuthException e) {
-            System.err.println("❌ Erreur Claims : " + e.getMessage());
+            try {
+                FirebaseAuth.getInstance().setCustomUserClaims(registerUserDTO.getId_user(), claims);
+                System.out.println("✅ Rôle " + registerUserDTO.getRole() + " ajouté au Token Firebase");
+            } catch (FirebaseAuthException e) {
+                System.err.println("❌ Erreur Claims du client: " + e.getMessage());
+            }
         }
+
+        userInterface.save(newUser);
     }
 
     /*

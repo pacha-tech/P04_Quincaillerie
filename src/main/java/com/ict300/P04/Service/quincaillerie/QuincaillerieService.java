@@ -1,5 +1,7 @@
 package com.ict300.P04.Service.quincaillerie;
 
+import com.google.firebase.auth.FirebaseAuth;
+import com.google.firebase.auth.FirebaseAuthException;
 import com.ict300.P04.DTO.quincaillerie.request.RegisterQuincaillerieDTO;
 import com.ict300.P04.DTO.quincaillerie.response.QuincaillerieDetailsDTO;
 import com.ict300.P04.Entite.Quincaillerie;
@@ -11,6 +13,8 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
+import java.util.HashMap;
+import java.util.Map;
 
 @Service
 public class QuincaillerieService {
@@ -35,15 +39,11 @@ public class QuincaillerieService {
          return quincaillerieDetailsDTO;
     }
 
-    public void registerQuincaillerie(RegisterQuincaillerieDTO registerQuincaillerieDTO){
-        /*
-        if(quincaillerieInterface.existsByStoreName(registerQuincaillerieDTO.getStoreName())){
-            throw new RuntimeException("Nom de quincaillerie deja pris");
-        }
-        */
+    public Quincaillerie registerQuincaillerie(RegisterQuincaillerieDTO registerQuincaillerieDTO){
 
         Quincaillerie newQuincaillerie = new Quincaillerie();
         User admin = userInterface.getByIdUser(registerQuincaillerieDTO.getIdUser());
+
 
         newQuincaillerie.setIdQuincaillerie(GenerateID.GenerateQuincaillerieID());
         newQuincaillerie.setAdmin(admin);
@@ -65,6 +65,10 @@ public class QuincaillerieService {
         newQuincaillerie.setAcceptTerms(registerQuincaillerieDTO.getAcceptTerms());
         newQuincaillerie.setWantTips(registerQuincaillerieDTO.getWantTips());
 
+
+
         quincaillerieInterface.save(newQuincaillerie);
+
+        return newQuincaillerie;
     }
 }

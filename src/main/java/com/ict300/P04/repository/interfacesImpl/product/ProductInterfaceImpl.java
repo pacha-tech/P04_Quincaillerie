@@ -2,6 +2,7 @@ package com.ict300.P04.repository.interfacesImpl.product;
 
 import com.ict300.P04.Entite.Price;
 import com.ict300.P04.Entite.Product;
+import com.ict300.P04.Entite.Quincaillerie;
 import com.ict300.P04.repository.interfaces.product.ProductCustomInterface;
 import jakarta.persistence.EntityManager;
 import jakarta.persistence.PersistenceContext;
@@ -44,14 +45,11 @@ public class ProductInterfaceImpl implements ProductCustomInterface {
     }
 
     @Override
-    public List<String> findNameOnly(String name) {
+    public List<String> findNameOnly() {
         String jpql = "SELECT DISTINCT p.name " +
-                "FROM Product p " +
-                "WHERE LOWER(p.name) LIKE LOWER(CONCAT('%', :query, '%'))";
+                "FROM Product p " ;
 
         return entityManager.createQuery(jpql , String.class)
-                .setParameter("query" , name)
-                .setMaxResults(5)
                 .getResultList();
     }
 
@@ -64,5 +62,16 @@ public class ProductInterfaceImpl implements ProductCustomInterface {
         return entityManager.createQuery(jpql , Product.class)
                 .setParameter("id",idProduct)
                 .getSingleResult();
+    }
+
+    @Override
+    public List<Price> getProductByQuincaillerie(Quincaillerie quincaillerie) {
+        String jpql = "SELECT p " +
+                " FROM Price p " +
+                "WHERE p.quincaillerie = :id ";
+
+        return entityManager.createQuery(jpql , Price.class)
+                .setParameter("id" , quincaillerie)
+                .getResultList();
     }
 }

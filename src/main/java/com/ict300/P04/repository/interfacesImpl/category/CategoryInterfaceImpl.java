@@ -1,5 +1,6 @@
 package com.ict300.P04.repository.interfacesImpl.category;
 
+import com.ict300.P04.Entite.Category;
 import com.ict300.P04.repository.interfaces.category.CategoryCustomInterface;
 import jakarta.persistence.EntityManager;
 import jakarta.persistence.PersistenceContext;
@@ -13,14 +14,22 @@ public class CategoryInterfaceImpl implements CategoryCustomInterface {
     private EntityManager entityManager;
 
     @Override
-    public List<String> findNameOnly(String name) {
+    public List<String> findNameOnly() {
         String jpql = "SELECT DISTINCT c.name " +
-                "FROM Category c " +
-                "WHERE LOWER(c.name) LIKE LOWER(CONCAT('%', :query, '%'))";
+                "FROM Category c ";
 
         return entityManager.createQuery(jpql , String.class)
-                .setParameter("query",name)
-                .setMaxResults(3)
                 .getResultList();
+    }
+
+    @Override
+    public Category getCategoty(String idCategory) {
+        String jpql = "SELECT c " +
+                "FROM Category c " +
+                "WHERE c.idCategory = :id ";
+
+        return  entityManager.createQuery(jpql , Category.class)
+                .setParameter("id",idCategory)
+                .getSingleResult();
     }
 }

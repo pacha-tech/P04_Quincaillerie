@@ -7,7 +7,7 @@ import jakarta.persistence.PersistenceContext;
 import org.springframework.stereotype.Repository;
 
 @Repository
-public class UserInterfaceImpl implements CustomerCustomInterface {
+public class CustomerInterfaceImpl implements CustomerCustomInterface {
     @PersistenceContext
     private EntityManager entityManager;
 

@@ -9,12 +9,12 @@ public class PriceSearchProductDTO {
     private String quincaillerieName;
     private String idQuincaillerie;
     private BigDecimal price;
-    private String stock;
+    private int stock;
     private String promotionRating;
     private BigDecimal latitudeQuincaillerie;
     private BigDecimal longitudeQuincaillerie;
 
-    public PriceSearchProductDTO(String quincaillerieName , String idQuincaillerie , BigDecimal price , String stock , String promotionRating , BigDecimal latitudeQuincaillerie , BigDecimal longitudeQuincaillerie){
+    public PriceSearchProductDTO(String quincaillerieName , String idQuincaillerie , BigDecimal price , int stock , String promotionRating , BigDecimal latitudeQuincaillerie , BigDecimal longitudeQuincaillerie){
         this.quincaillerieName = quincaillerieName;
         this.idQuincaillerie = idQuincaillerie;
         this.price = price;

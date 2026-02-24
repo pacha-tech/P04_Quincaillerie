@@ -4,5 +4,5 @@ import com.ict300.P04.Entite.Quincaillerie;
 import com.ict300.P04.Entite.User;
 import org.springframework.data.jpa.repository.JpaRepository;
 
-public interface SellerInterface{
+public interface SellerInterface extends JpaRepository<User , String> , SellerCustomInterface{
 }
