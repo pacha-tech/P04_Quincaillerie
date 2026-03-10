@@ -56,4 +56,34 @@ public class PriceInterfaceImpl implements PriceCustomInterface {
 
         return typedQuery.getResultList();
     }
+
+    @Override
+    public boolean ifAlreadyExistProductByQuincaillerie(String name, String quincaillerieId) {
+        String jpql = " SELECT COUNT(pr) > 0 "+
+        "FROM Price pr "+
+        "JOIN pr.product p "+
+        "JOIN pr.quincaillerie q "+
+        "WHERE LOWER(p.name) = LOWER(:name) "+
+         "AND q.idQuincaillerie = :id ";
+
+        return entityManager.createQuery(jpql, Boolean.class)
+                .setParameter("name", name)
+                .setParameter("id", quincaillerieId)
+                .getSingleResult();
+    }
+
+    @Override
+    public Price getPriceByProductAndQuincaillerie(String produitId, String quincaillerieId) {
+        String jpql = "SELECT p " +
+                "FROM Price p " +
+                "JOIN p.product pr " +
+                "JOIN p.quincaillerie q " +
+                "WHERE pr.idProduct = :product " +
+                "AND q.idQuincaillerie = :quincaillerie ";
+
+        return entityManager.createQuery(jpql , Price.class)
+                .setParameter("product" , produitId)
+                .setParameter("quincaillerie" , quincaillerieId)
+                .getSingleResult();
+    }
 }

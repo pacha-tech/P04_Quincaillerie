@@ -41,6 +41,7 @@ public class SecurityConfig {
                         .requestMatchers("/quincaillerie/products/recommendations").authenticated()
                         .requestMatchers("/quincaillerie/products/addProduct").hasRole("VENDEUR")
                         .requestMatchers("/quincaillerie/products/getStock").hasRole("VENDEUR")
+                        .requestMatchers(HttpMethod.DELETE , "/quincaillerie/products/**").hasRole("VENDEUR")
                         .requestMatchers("/quincaillerie/quincaillerie/details").permitAll()
                         .requestMatchers("/quincaillerie/quincaillerie/registerQuincaillerie").authenticated()
                         .requestMatchers("/quincaillerie/category/addCategory").hasRole("VENDEUR")

@@ -19,7 +19,7 @@ public class AuthCustomerController {
 
     @PostMapping("/registerCustomer")
     @Operation(summary = "Inscription d'un client")
-    public ResponseEntity<?> registerUSer(@Valid @RequestBody RegisterCustomerDTO request) {
+    public ResponseEntity<?> registerUSer(@Valid @RequestBody RegisterCustomerDTO request) throws Exception {
         authCustomerService.register(request);
         return ResponseEntity.ok("Incription Reussis du client " + request.getName());
     }

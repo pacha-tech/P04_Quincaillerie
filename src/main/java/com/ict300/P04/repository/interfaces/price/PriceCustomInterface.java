@@ -7,4 +7,6 @@ import java.util.List;
 
 public interface PriceCustomInterface {
     List<Price> searchAdvanced(String query, String city, String category, BigDecimal maxPrice);
+    boolean ifAlreadyExistProductByQuincaillerie(String name , String quincaillerieId);
+    Price getPriceByProductAndQuincaillerie(String produitId , String quincaillerieId);
 }

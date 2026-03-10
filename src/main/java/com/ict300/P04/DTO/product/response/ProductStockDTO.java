@@ -12,8 +12,10 @@ public class ProductStockDTO {
     private String unit;
     private String sellPrice;
     private String imageUrl;
+    private String description;
+    private String purchasePrice;
 
-    public ProductStockDTO(String id , String name , String brand ,String category , int stock , String unit , String sellPrice , String imageUrl){
+    public ProductStockDTO(String id , String name , String brand ,String category , int stock , String unit , String sellPrice , String imageUrl , String description , String purchasePrice){
         this.id = id;
         this.name = name;
         this.brand = brand;
@@ -22,6 +24,8 @@ public class ProductStockDTO {
         this.unit = unit;
         this.sellPrice = sellPrice;
         this.imageUrl = imageUrl;
+        this.description = description;
+        this.purchasePrice = purchasePrice;
     }
 
     public ProductStockDTO(){}

@@ -14,10 +14,10 @@ public class AddProductDTO {
     private BigDecimal purchasePrice;
     private BigDecimal sellingPrice;
     private int stock;
-    private String idQuincaillerie;
+    //private String idQuincaillerie;
     private String unite;
 
-    public AddProductDTO(String imageUrl , String name , String categoryId , String brand , String description , BigDecimal purchasePrice , BigDecimal sellingPrice , int stock , String idQuincaillerie , String unite) {
+    public AddProductDTO(String imageUrl , String name , String categoryId , String brand , String description , BigDecimal purchasePrice , BigDecimal sellingPrice , int stock , String unite) {
         this.imageUrl = imageUrl;
         this.name = name;
         this.categoryId = categoryId;
@@ -26,7 +26,7 @@ public class AddProductDTO {
         this.purchasePrice = purchasePrice;
         this.sellingPrice = sellingPrice;
         this.stock = stock;
-        this.idQuincaillerie = idQuincaillerie;
+        //this.idQuincaillerie = idQuincaillerie;
         this.unite = unite;
     }
 

@@ -45,7 +45,7 @@ public class ProductInterfaceImpl implements ProductCustomInterface {
     }
 
     @Override
-    public List<String> findNameOnly() {
+    public List<String> findNameOnly(String name) {
         String jpql = "SELECT DISTINCT p.name " +
                 "FROM Product p " ;
 

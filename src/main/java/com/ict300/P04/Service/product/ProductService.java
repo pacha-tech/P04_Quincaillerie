@@ -2,10 +2,13 @@ package com.ict300.P04.Service.product;
 
 import com.ict300.P04.DTO.price.response.PriceSearchProductDTO;
 import com.ict300.P04.DTO.product.request.AddProductDTO;
+import com.ict300.P04.DTO.product.request.UpdateProductDTO;
 import com.ict300.P04.DTO.product.response.ProductStockDTO;
 import com.ict300.P04.DTO.product.response.SearchProductDTO;
 import com.ict300.P04.DTO.product.response.getProductDTO;
 import com.ict300.P04.Entite.*;
+import com.ict300.P04.Exception.ProductExistException;
+import com.ict300.P04.Exception.ProductNotFoundException;
 import com.ict300.P04.Utilitaires.GenerateID;
 import com.ict300.P04.repository.interfaces.category.CategoryInterface;
 import com.ict300.P04.repository.interfaces.price.PriceInterface;
@@ -14,6 +17,7 @@ import com.ict300.P04.repository.interfaces.quincaillerie.QuincaillerieInterface
 import com.ict300.P04.repository.interfaces.user.seller.SellerInterface;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
 import java.util.List;
@@ -67,13 +71,18 @@ public class ProductService {
         )).toList();
     }
 
-    public void AddProduct(AddProductDTO addProductDTO , String uid) {
+    public void AddProduct(AddProductDTO addProductDTO , String uid , String quincaillerieId) {
+
+        boolean ifExist = priceInterface.ifAlreadyExistProductByQuincaillerie(addProductDTO.getName() , quincaillerieId);
+        if(ifExist){
+            throw new ProductExistException("Le produit existe deja pour cette quincaillerie");
+        }
         Product newProduct = new Product();
         Price newPrice = new Price();
 
 
         Category category = categoryInterface.getCategoty(addProductDTO.getCategoryId());
-        Quincaillerie quincaillerie = quincaillerieInterface.getQuincaillerie(addProductDTO.getIdQuincaillerie());
+        Quincaillerie quincaillerie = quincaillerieInterface.getQuincaillerie(quincaillerieId);
         User user = sellerInterface.getByIdUser(uid);
 
 
@@ -110,7 +119,69 @@ public class ProductService {
                 price.getStock(),
                 price.getProduct().getUnit(),
                 price.getPrice().toString(),
-                price.getProduct().getImageUrl()
+                price.getProduct().getImageUrl(),
+                price.getProduct().getDescription(),
+                price.getPurchasePrice().toString()
         )).toList();
+    }
+
+    @Transactional
+    public void updateProduct(String idProduct , UpdateProductDTO updateProductDTO) {
+
+        Product product = productInterface.getProduct(idProduct);
+
+        Price price = priceInterface.findByProduct(product);
+
+        if(price == null){
+            throw new ProductNotFoundException("Le produit "+updateProductDTO.getName()+" n'existe pas");
+        }
+
+        if(updateProductDTO.getName() != null ){
+            product.setName(updateProductDTO.getName());
+        }
+        if (updateProductDTO.getBrand() != null){
+            product.setBrand(updateProductDTO.getBrand());
+        }
+        if(updateProductDTO.getImageUrl() != null){
+            product.setImageUrl(updateProductDTO.getImageUrl());
+        }
+        if(updateProductDTO.getDescriptionProduit() != null ){
+            product.setDescription(updateProductDTO.getDescriptionProduit());
+        }
+        if(updateProductDTO.getPurchasePrice() != null){
+            price.setPurchasePrice(updateProductDTO.getPurchasePrice());
+        }
+        if(updateProductDTO.getSellingPrice() != null){
+            price.setPrice(updateProductDTO.getSellingPrice());
+        }
+        if(updateProductDTO.getQuantite() != null){
+            price.setStock(updateProductDTO.getQuantite());
+        }
+        if(updateProductDTO.getUnite() != null){
+            product.setUnit(updateProductDTO.getUnite());
+        }
+
+        productInterface.save(product);
+        priceInterface.save(price);
+    }
+
+    @Transactional
+    public void deleteProduct(String idProduct , String quincaillerieId){
+        Price price = priceInterface.getPriceByProductAndQuincaillerie(idProduct , quincaillerieId);
+
+        System.out.println("PRICE: "+price);
+
+        if(price == null){
+            throw new ProductNotFoundException("Ce Produit n'existe pas");
+        }
+
+        priceInterface.deleteById(price.getIdPrice());
+
+
+        if(productInterface.existsById(idProduct)){
+            productInterface.deleteById(idProduct);
+        }else {
+            throw new ProductNotFoundException("Ce Produit n'existe pas");
+        }
     }
 }
