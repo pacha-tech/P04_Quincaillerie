@@ -4,15 +4,12 @@ import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseAuthException;
 import com.google.firebase.auth.UserRecord;
 import com.ict300.P04.DTO.user.customer.request.RegisterCustomerDTO;
-import com.ict300.P04.Entite.Quincaillerie;
 import com.ict300.P04.Entite.User;
 import com.ict300.P04.repository.interfaces.user.customer.CustomerInterface;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-
-import java.sql.SQLException;
 import java.time.LocalDateTime;
 import java.util.HashMap;
 import java.util.Map;
@@ -69,15 +66,4 @@ public class AuthCustomerService {
         }
         return newUser;
     }
-
-    /*
-    public boolean login(LoginUserDTO loginUserDTO){
-        Optional<User> userOpt = userInterface.findByName(loginUserDTO.getUsername());
-
-        if(userOpt.isPresent()) {
-            User user = userOpt.get();
-        }
-        return false;
-    }
-     */
 }

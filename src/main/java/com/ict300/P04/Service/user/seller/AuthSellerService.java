@@ -27,20 +27,33 @@ public class AuthSellerService {
 
     @Transactional
     public void registerSeller(RegisterSellerDTO registerSellerDTO) throws Exception {
-        User user = authCustomerService.register(registerSellerDTO.getUser());
-        Quincaillerie quincaillerie = quincaillerieService.registerQuincaillerie(registerSellerDTO.getQuincaillerie());
-
-
-        Map<String, Object> claims = new HashMap<>();
-        claims.put("role", registerSellerDTO.getUser().getRole());
-        claims.put("quincaillerieId", quincaillerie.getIdQuincaillerie());
+        User user = null;
+        Quincaillerie quincaillerie = null;
 
         try {
+            user = authCustomerService.register(registerSellerDTO.getUser());
+
+            quincaillerie = quincaillerieService.registerQuincaillerie(registerSellerDTO.getQuincaillerie() , user.getIdUser());
+
+            Map<String, Object> claims = new HashMap<>();
+            claims.put("role", registerSellerDTO.getUser().getRole());
+            claims.put("quincaillerieId", quincaillerie.getIdQuincaillerie());
+
             FirebaseAuth.getInstance().setCustomUserClaims(user.getIdUser(), claims);
             System.out.println("✅ Rôle " + registerSellerDTO.getUser().getRole() + "et "+quincaillerie.getIdQuincaillerie()+" ajouté au Token Firebase"+user.getIdUser());
-        } catch (FirebaseAuthException e) {
-            System.err.println("❌ Erreur Claims du vendeur : " + e.getMessage());
-        }
+        } catch (Exception e) {
+            if (user != null) {
+                try {
 
+                    FirebaseAuth.getInstance().deleteUser(user.getIdUser());
+                    System.err.println("⚠️ Nettoyage : Utilisateur Firebase " + user.getIdUser() + " supprimé suite à une erreur.");
+                } catch (FirebaseAuthException fe) {
+                    System.err.println("❌ ERREUR CRITIQUE : Impossible de supprimer le vendeur sur Firebase : " + fe.getMessage());
+                }
+            }
+
+
+            throw e;
+        }
     }
 }

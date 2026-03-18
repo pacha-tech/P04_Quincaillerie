@@ -30,7 +30,12 @@ public class GlobalExceptionHandler {
 
     @ExceptionHandler(ProductNotFoundException.class)
     public  ResponseEntity<ApiError> handleProductNotExist(ProductNotFoundException ex) {
-        return new ResponseEntity<>(new ApiError(HttpStatus.NOT_FOUND , ex.getMessage()) , HttpStatus.NOT_FOUND);
+        return new ResponseEntity<>(new ApiError(HttpStatus.NOT_FOUND, ex.getMessage()), HttpStatus.NOT_FOUND);
+    }
+
+    @ExceptionHandler(UserNotFoundException.class)
+    public  ResponseEntity<ApiError> handleUserNotExist(UserNotFoundException ex) {
+        return new ResponseEntity<>(new ApiError(HttpStatus.NOT_FOUND, ex.getMessage()), HttpStatus.NOT_FOUND);
     }
 }
 

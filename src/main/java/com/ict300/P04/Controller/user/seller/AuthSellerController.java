@@ -21,7 +21,9 @@ public class AuthSellerController {
     @PostMapping("/registerSeller")
     @Operation(summary = "Inscription vendeur")
     public ResponseEntity<?> registerUSer(@Valid @RequestBody RegisterSellerDTO registerSellerDTO) throws Exception {
-        System.out.println(registerSellerDTO.getUser().getEmail());
+        System.out.println("VENDEUR1: "+registerSellerDTO.getUser());
+        System.out.println("VENDEUR1: "+registerSellerDTO.getQuincaillerie());
+
         authSellerService.registerSeller(registerSellerDTO);
         return ResponseEntity.ok("Incription Reussis du vendeur");
     }

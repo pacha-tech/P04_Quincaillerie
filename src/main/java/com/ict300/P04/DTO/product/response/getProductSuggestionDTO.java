@@ -3,7 +3,7 @@ package com.ict300.P04.DTO.product.response;
 import lombok.Data;
 
 @Data
-public class getProductDTO {
+public class getProductSuggestionDTO {
     private String id;
     private String nom;
     private String categorieId;
@@ -13,7 +13,7 @@ public class getProductDTO {
     private String brand;
     private String unite;
 
-    public getProductDTO(String id , String nom , String categorieId , String categoryName , String descriptionCategorie , String descriptionProduit , String brand , String unite){
+    public getProductSuggestionDTO(String id , String nom , String categorieId , String categoryName , String descriptionCategorie , String descriptionProduit , String brand , String unite){
         this.id = id;
         this.nom = nom;
         this.categorieId = categorieId;
@@ -24,5 +24,5 @@ public class getProductDTO {
         this.unite = unite;
     }
 
-    public getProductDTO(){}
+    public getProductSuggestionDTO(){}
 }

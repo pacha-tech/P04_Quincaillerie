@@ -39,9 +39,18 @@ public class Price {
     @Column(name = "Stock")
     private int stock;
 
-    @Column(name = "Promotion_rating")
-    private String promotionRating;
-
     @OneToMany(mappedBy = "price")
     private List<Report> reports = new ArrayList<>();
+
+    @OneToMany(mappedBy = "price")
+    private List<Vente> ventes = new ArrayList<>();
+
+    @OneToMany(mappedBy = "price")
+    private List<Stock> stocks = new ArrayList<>();
+
+    @OneToMany(mappedBy = "price")
+    private List<Promotion> promotions = new ArrayList<>();
+
+    @OneToMany(mappedBy = "price")
+    private List<Panier> paniers = new ArrayList<>();
 }

@@ -9,13 +9,15 @@ public class SearchProductDTO {
     private String idProduct;
     private String idCategory;
     private String name;
+    private String unite;
     private List<PriceSearchProductDTO> priceSearchProductsDTO;
     private String description;
 
-    public SearchProductDTO(String idProduct , String idCategory , String name , List<PriceSearchProductDTO> priceSearchProductsDTO , String description){
+    public SearchProductDTO(String idProduct , String idCategory , String name , String unite , List<PriceSearchProductDTO> priceSearchProductsDTO , String description){
         this.idProduct = idProduct;
         this.idCategory = idCategory;
         this.name = name;
+        this.unite = unite;
         this.priceSearchProductsDTO = priceSearchProductsDTO;
         this.description = description;
     }

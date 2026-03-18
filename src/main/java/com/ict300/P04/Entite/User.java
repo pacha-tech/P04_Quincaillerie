@@ -62,4 +62,10 @@ public class User {
 
     @OneToMany(mappedBy = "user")
     private List<Report> reports = new ArrayList<>();
+
+    @OneToMany(mappedBy = "user")
+    private List<Facture> factures = new ArrayList<>();
+
+    @OneToMany(mappedBy = "user")
+    private List<Panier> paniers = new ArrayList<>();
 }

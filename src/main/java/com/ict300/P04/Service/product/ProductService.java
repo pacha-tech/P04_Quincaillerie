@@ -5,7 +5,7 @@ import com.ict300.P04.DTO.product.request.AddProductDTO;
 import com.ict300.P04.DTO.product.request.UpdateProductDTO;
 import com.ict300.P04.DTO.product.response.ProductStockDTO;
 import com.ict300.P04.DTO.product.response.SearchProductDTO;
-import com.ict300.P04.DTO.product.response.getProductDTO;
+import com.ict300.P04.DTO.product.response.getProductSuggestionDTO;
 import com.ict300.P04.Entite.*;
 import com.ict300.P04.Exception.ProductExistException;
 import com.ict300.P04.Exception.ProductNotFoundException;
@@ -44,12 +44,13 @@ public class ProductService {
                 product.getIdProduct(),
                 product.getCategory().getIdCategory(),
                 product.getName(),
+                product.getUnit(),
                 product.getPrices().stream().map(price -> new PriceSearchProductDTO(
                         price.getQuincaillerie().getStoreName(),
                         price.getQuincaillerie().getIdQuincaillerie(),
                         price.getPrice(),
                         price.getStock(),
-                        price.getPromotionRating(),
+                        price.getIdPrice(),
                         price.getQuincaillerie().getLatitude(),
                         price.getQuincaillerie().getLongitude()
                 )).toList(),
@@ -57,9 +58,9 @@ public class ProductService {
         )).toList();
     }
 
-    public List<getProductDTO> getAllSuggestions() {
+    public List<getProductSuggestionDTO> getAllSuggestions() {
 
-        return productInterface.findAll().stream().map(product -> new getProductDTO(
+        return productInterface.findAll().stream().map(product -> new getProductSuggestionDTO(
                 product.getIdProduct(),
                 product.getName(),
                 product.getCategory().getIdCategory(),

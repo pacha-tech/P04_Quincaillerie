@@ -3,6 +3,7 @@ package com.ict300.P04.Service.recommadation;
 import com.ict300.P04.DTO.recommadation.response.RecommendedProductDTO;
 import com.ict300.P04.Entite.Price;
 import com.ict300.P04.Entite.Product;
+import com.ict300.P04.repository.interfaces.price.PriceInterface;
 import com.ict300.P04.repository.interfaces.product.ProductInterface;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -10,16 +11,22 @@ import org.springframework.stereotype.Service;
 import java.math.BigDecimal;
 import java.util.List;
 import java.util.Objects;
-import java.util.stream.Collectors;
+import java.util.Optional;
 
 @Service
 public class RecommandationService {
+
     @Autowired
     private ProductInterface productInterface;
 
-    public List<RecommendedProductDTO> getRecommendations(String IdProduct , String IdQuincaillerie ) {
+    @Autowired
+    private PriceInterface priceInterface;
+
+
+    public List<RecommendedProductDTO> getRecommendations(String IdProduct, String IdQuincaillerie) {
+
         Product currentProduct = productInterface.findById(IdProduct)
-                .orElseThrow(() -> new RuntimeException("Produit non trouvé"));
+                .orElseThrow(() -> new RuntimeException("Produit source non trouvé"));
 
 
         List<Product> similarProducts = productInterface.findRecommendationByProductAndCategoryAndQuincaillerie(
@@ -30,38 +37,47 @@ public class RecommandationService {
 
 
         return similarProducts.stream()
-                .map(p -> new RecommendedProductDTO(p.getName(), productInterface.findPriceByQuincaillerie(IdProduct , IdQuincaillerie) , p.getDescription() ,  calculateScore(currentProduct, p)))
+                .map(p -> {
+
+                    Price priceEntity = priceInterface.getPriceByProductAndQuincaillerie(p.getIdProduct(), IdQuincaillerie);
+
+                    BigDecimal priceValue = (priceEntity != null) ? priceEntity.getPrice() : BigDecimal.ZERO;
+                    String priceId = (priceEntity != null) ? priceEntity.getIdPrice() : "N/A";
+                    int currentStock = (priceEntity != null) ? priceEntity.getStock() : 0;
+
+
+                    int score = calculateScore(currentProduct, p);
+
+                    return new RecommendedProductDTO(
+                            priceId,
+                            p.getName(),
+                            priceValue,
+                            p.getDescription(),
+                            currentStock,
+                            score,
+                            p.getUnit()
+                    );
+                })
                 .sorted((a, b) -> Integer.compare(b.getScore(), a.getScore()))
                 .limit(5)
-                .map(recommendedProductDTO -> new RecommendedProductDTO(
-                        recommendedProductDTO.getName(),
-                        recommendedProductDTO.getPrice(),
-                        recommendedProductDTO.getDescription(),
-                        recommendedProductDTO.getScore()
-                )).toList();
+                .toList();
     }
+
 
     private int calculateScore(Product current, Product target) {
         int score = 0;
 
-        if (current.getBrand() != null && current.getBrand().equals(target.getBrand())) {
+        // Bonus Marque
+        if (current.getBrand() != null && target.getBrand() != null
+                && current.getBrand().equalsIgnoreCase(target.getBrand())) {
             score += 2;
         }
 
-        double currentMinPrice = current.getPrices().stream()
-                .map(Price::getPrice)
-                .filter(Objects::nonNull)
-                .mapToDouble(BigDecimal::doubleValue)
-                .min()
-                .orElse(0.0);
+        // Calcul des prix minimums pour la comparaison de budget
+        double currentMinPrice = getMinPriceValue(current);
+        double targetMinPrice = getMinPriceValue(target);
 
-        double targetMinPrice = target.getPrices().stream()
-                .map(Price::getPrice)
-                .filter(Objects::nonNull)
-                .mapToDouble(BigDecimal::doubleValue)
-                .min()
-                .orElse(0.0);
-
+        // Bonus Proximité de prix (+/- 10%)
         if (currentMinPrice > 0) {
             double rangeMin = currentMinPrice * 0.9;
             double rangeMax = currentMinPrice * 1.1;
@@ -72,5 +88,16 @@ public class RecommandationService {
         }
 
         return score;
+    }
+
+    private double getMinPriceValue(Product product) {
+        if (product.getPrices() == null) return 0.0;
+
+        return product.getPrices().stream()
+                .map(Price::getPrice)
+                .filter(Objects::nonNull)
+                .mapToDouble(BigDecimal::doubleValue)
+                .min()
+                .orElse(0.0);
     }
 }

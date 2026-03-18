@@ -39,10 +39,10 @@ public class QuincaillerieService {
          return quincaillerieDetailsDTO;
     }
 
-    public Quincaillerie registerQuincaillerie(RegisterQuincaillerieDTO registerQuincaillerieDTO){
+    public Quincaillerie registerQuincaillerie(RegisterQuincaillerieDTO registerQuincaillerieDTO , String idUser){
 
         Quincaillerie newQuincaillerie = new Quincaillerie();
-        User admin = userInterface.getByIdUser(registerQuincaillerieDTO.getIdUser());
+        User admin = userInterface.getByIdUser(idUser);
 
 
         newQuincaillerie.setIdQuincaillerie(GenerateID.GenerateQuincaillerieID());

@@ -1,11 +1,10 @@
 package com.ict300.P04.Controller.products;
 
-import com.ict300.P04.DTO.favorite.request.DeleteFavoriteProductDTO;
 import com.ict300.P04.DTO.product.request.AddProductDTO;
 import com.ict300.P04.DTO.product.request.UpdateProductDTO;
 import com.ict300.P04.DTO.product.response.ProductStockDTO;
 import com.ict300.P04.DTO.product.response.SearchProductDTO;
-import com.ict300.P04.DTO.product.response.getProductDTO;
+import com.ict300.P04.DTO.product.response.getProductSuggestionDTO;
 import com.ict300.P04.DTO.recommadation.response.RecommendedProductDTO;
 import com.ict300.P04.Exception.ApiError;
 import com.ict300.P04.Exception.ApiResponse;
@@ -41,6 +40,7 @@ public class ProductController {
     @GetMapping("/search")
     public ResponseEntity<List<SearchProductDTO>> search(@RequestParam String name) {
         List<SearchProductDTO> results = productService.SearchProductByName(name);
+        System.out.println(results);
         return ResponseEntity.ok(results);
     }
 
@@ -114,11 +114,10 @@ public class ProductController {
 
     @Operation(summary = "Suggestions auto-complétion")
     @GetMapping("/suggestions")
-    public ResponseEntity<List<getProductDTO>> getSuggestions() {
-        List<getProductDTO> suggestions = productService.getAllSuggestions();
+    public ResponseEntity<List<getProductSuggestionDTO>> getSuggestions() {
+        List<getProductSuggestionDTO> suggestions = productService.getAllSuggestions();
         return ResponseEntity.ok(suggestions);
     }
-
 
     @Operation(summary = "Mise à jour partielle d'un produit (PATCH)")
     @PatchMapping("/{id}")

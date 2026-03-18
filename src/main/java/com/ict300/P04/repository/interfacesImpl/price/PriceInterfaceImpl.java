@@ -86,4 +86,15 @@ public class PriceInterfaceImpl implements PriceCustomInterface {
                 .setParameter("quincaillerie" , quincaillerieId)
                 .getSingleResult();
     }
+
+    @Override
+    public Price getByIdPrice(String idPrice) {
+        String jpql = "SELECT p " +
+                "FROM Price p " +
+                "WHERE p.idPrice = :id ";
+
+        return entityManager.createQuery(jpql , Price.class)
+                .setParameter("id" , idPrice)
+                .getSingleResult();
+    }
 }

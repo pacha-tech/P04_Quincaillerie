@@ -33,7 +33,7 @@ public class Quincaillerie {
     @Column(name = "Phone")
     private String phone;
 
-    @Column(name = "Region")
+    @Column(name = "Region" , length = 15)
     private String region;
 
     @Column(name = "Description")
@@ -45,7 +45,7 @@ public class Quincaillerie {
     @Column(name = "Notice_count")
     private int noticeCount;
 
-    @Column(name = "NUI")
+    @Column(name = "NUI" , length = 20)
     private String nui;
 
     @Column(name = "Accept_terms")
@@ -83,4 +83,7 @@ public class Quincaillerie {
 
     @OneToMany(mappedBy = "quincaillerie")
     private List<FavoriteQuincaillerie> favoriteQuincailleries = new ArrayList<>();
+
+    @OneToMany(mappedBy = "quincaillerie")
+    private List<Facture> factures = new ArrayList<>();
 }

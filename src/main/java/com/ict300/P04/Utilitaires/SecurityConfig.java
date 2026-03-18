@@ -38,7 +38,7 @@ public class SecurityConfig {
                         .requestMatchers("/quincaillerie/users/profile").authenticated()
                         .requestMatchers("/quincaillerie/products/suggestions").permitAll()
                         .requestMatchers("/quincaillerie/products/search").permitAll()
-                        .requestMatchers("/quincaillerie/products/recommendations").authenticated()
+                        .requestMatchers("/quincaillerie/products/recommendations").permitAll()
                         .requestMatchers("/quincaillerie/products/addProduct").hasRole("VENDEUR")
                         .requestMatchers("/quincaillerie/products/getStock").hasRole("VENDEUR")
                         .requestMatchers(HttpMethod.DELETE , "/quincaillerie/products/**").hasRole("VENDEUR")
@@ -46,6 +46,7 @@ public class SecurityConfig {
                         .requestMatchers("/quincaillerie/quincaillerie/registerQuincaillerie").authenticated()
                         .requestMatchers("/quincaillerie/category/addCategory").hasRole("VENDEUR")
                         .requestMatchers("/quincaillerie/category/allCategory").permitAll()
+                        .requestMatchers("/quincaillerie/panier/**").permitAll()
                         .requestMatchers("/v3/api-docs/**", "/swagger-ui/**", "/swagger-ui.html").permitAll()
 
                         // Autoriser les requêtes OPTIONS (CORS)
