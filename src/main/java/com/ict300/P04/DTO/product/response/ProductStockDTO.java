@@ -1,8 +1,10 @@
 package com.ict300.P04.DTO.product.response;
 
+import lombok.AllArgsConstructor;
 import lombok.Data;
+import lombok.NoArgsConstructor;
 
-@Data
+@Data @AllArgsConstructor @NoArgsConstructor
 public class ProductStockDTO {
     private String id;
     private String name;
@@ -14,19 +16,8 @@ public class ProductStockDTO {
     private String imageUrl;
     private String description;
     private String purchasePrice;
+    private String pricePromo;
+    private boolean inPromotion;
+    private String taux;
 
-    public ProductStockDTO(String id , String name , String brand ,String category , int stock , String unit , String sellPrice , String imageUrl , String description , String purchasePrice){
-        this.id = id;
-        this.name = name;
-        this.brand = brand;
-        this.category = category;
-        this.stock = stock;
-        this.unit = unit;
-        this.sellPrice = sellPrice;
-        this.imageUrl = imageUrl;
-        this.description = description;
-        this.purchasePrice = purchasePrice;
-    }
-
-    public ProductStockDTO(){}
 }

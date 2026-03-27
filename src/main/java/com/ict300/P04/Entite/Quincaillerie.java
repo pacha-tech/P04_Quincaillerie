@@ -86,4 +86,7 @@ public class Quincaillerie {
 
     @OneToMany(mappedBy = "quincaillerie")
     private List<Facture> factures = new ArrayList<>();
+
+    @OneToMany(mappedBy = "quincaillerie")
+    private List<CampagnePromotion> campagnePromotions = new ArrayList<>();
 }

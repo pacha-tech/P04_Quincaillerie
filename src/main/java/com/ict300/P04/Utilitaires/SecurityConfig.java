@@ -46,8 +46,11 @@ public class SecurityConfig {
                         .requestMatchers("/quincaillerie/quincaillerie/registerQuincaillerie").authenticated()
                         .requestMatchers("/quincaillerie/category/addCategory").hasRole("VENDEUR")
                         .requestMatchers("/quincaillerie/category/allCategory").permitAll()
+                        .requestMatchers("/quincaillerie/promotion/**").hasRole("VENDEUR")
                         .requestMatchers("/quincaillerie/panier/**").permitAll()
-                        .requestMatchers("/v3/api-docs/**", "/swagger-ui/**", "/swagger-ui.html").permitAll()
+                        .requestMatchers("/v3/api-docs/**").permitAll()
+                        .requestMatchers("/swagger-ui/**").permitAll()
+                        .requestMatchers("/swagger-ui.html").permitAll()
 
                         // Autoriser les requêtes OPTIONS (CORS)
                         .requestMatchers(HttpMethod.OPTIONS, "/**").permitAll()

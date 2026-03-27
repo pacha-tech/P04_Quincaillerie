@@ -9,19 +9,27 @@ import com.ict300.P04.DTO.product.response.getProductSuggestionDTO;
 import com.ict300.P04.Entite.*;
 import com.ict300.P04.Exception.ProductExistException;
 import com.ict300.P04.Exception.ProductNotFoundException;
+import com.ict300.P04.Exception.ResourceNotFoundException;
+import com.ict300.P04.Service.cloudinary.CloudinaryService;
 import com.ict300.P04.Utilitaires.GenerateID;
 import com.ict300.P04.repository.interfaces.category.CategoryInterface;
 import com.ict300.P04.repository.interfaces.price.PriceInterface;
 import com.ict300.P04.repository.interfaces.product.ProductInterface;
 import com.ict300.P04.repository.interfaces.quincaillerie.QuincaillerieInterface;
 import com.ict300.P04.repository.interfaces.user.seller.SellerInterface;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.web.multipart.MultipartFile;
 
+import java.io.IOException;
 import java.time.LocalDateTime;
+import java.util.ArrayList;
 import java.util.List;
 
+
+@Slf4j
 @Service
 public class ProductService {
     @Autowired
@@ -38,6 +46,9 @@ public class ProductService {
 
     @Autowired
     private PriceInterface priceInterface;
+
+    @Autowired
+    private CloudinaryService cloudinaryService;
 
     public List<SearchProductDTO> SearchProductByName(String name) {
         return productInterface.findByNameContainingIgnoreCase(name).stream().map(product -> new SearchProductDTO(
@@ -72,24 +83,37 @@ public class ProductService {
         )).toList();
     }
 
-    public void AddProduct(AddProductDTO addProductDTO , String uid , String quincaillerieId) {
 
-        boolean ifExist = priceInterface.ifAlreadyExistProductByQuincaillerie(addProductDTO.getName() , quincaillerieId);
-        if(ifExist){
-            throw new ProductExistException("Le produit existe deja pour cette quincaillerie");
+    @Transactional
+    public void AddProduct(AddProductDTO addProductDTO, MultipartFile image, String uid, String quincaillerieId) {
+
+
+        boolean ifExist = priceInterface.ifAlreadyExistProductByQuincaillerie(addProductDTO.getName(), quincaillerieId);
+        if (ifExist) {
+            throw new ProductExistException("Le produit existe déjà pour cette quincaillerie");
         }
-        Product newProduct = new Product();
-        Price newPrice = new Price();
 
+
+        /*
+        String imageUrl = null;
+        if (image != null && !image.isEmpty()) {
+            try {
+                imageUrl = cloudinaryService.uploadImage(image);
+            } catch (IOException e) {
+                log.error("Échec de l'upload de l'image, création du produit sans image", e);
+            }
+        }
+         */
 
         Category category = categoryInterface.getCategoty(addProductDTO.getCategoryId());
         Quincaillerie quincaillerie = quincaillerieInterface.getQuincaillerie(quincaillerieId);
         User user = sellerInterface.getByIdUser(uid);
 
 
+        Product newProduct = new Product();
         newProduct.setIdProduct(GenerateID.GenerateProductID());
         newProduct.setName(addProductDTO.getName());
-        newProduct.setImageUrl(addProductDTO.getImageUrl());
+        newProduct.setImageUrl("");
         newProduct.setCategory(category);
         newProduct.setBrand(addProductDTO.getBrand());
         newProduct.setDescription(addProductDTO.getDescription());
@@ -97,6 +121,8 @@ public class ProductService {
 
         productInterface.save(newProduct);
 
+
+        Price newPrice = new Price();
         newPrice.setIdPrice(GenerateID.GeneratePriceID());
         newPrice.setProduct(newProduct);
         newPrice.setQuincaillerie(quincaillerie);
@@ -107,11 +133,67 @@ public class ProductService {
         newPrice.setStock(addProductDTO.getStock());
 
         priceInterface.save(newPrice);
+
+        log.info("Produit '{}' ajouté avec succès (ID: {})", newProduct.getName(), newProduct.getIdProduct());
     }
 
-    public List<ProductStockDTO> getProductByQuincaillerie(String idQuincaillerie) {
+
+    public List<ProductStockDTO> getStock(String idQuincaillerie) {
         Quincaillerie quincaillerie = quincaillerieInterface.getQuincaillerie(idQuincaillerie);
-        List<Price> prices = productInterface.getProductByQuincaillerie(quincaillerie);
+
+        if(quincaillerie == null ) {
+            throw new ResourceNotFoundException("La quincaillerie n'existe pas");
+        }
+
+        List<ProductStockDTO> productStockDTOList = new ArrayList<>();
+
+        //List<Price> prices = productInterface.getProductByQuincaillerie(quincaillerie);
+        List<Object[]> prices = productInterface.getProductByQuincailleries(quincaillerie);
+
+        for (Object[] price : prices) {
+            ProductStockDTO productStockDTO = new ProductStockDTO();
+
+            Price priceEntity = (Price) price[0];
+
+            // Remplissage des infos de base
+            productStockDTO.setId(priceEntity.getProduct().getIdProduct());
+            productStockDTO.setName(priceEntity.getProduct().getName());
+            productStockDTO.setBrand(priceEntity.getProduct().getBrand());
+            productStockDTO.setCategory(priceEntity.getProduct().getCategory().getName());
+            productStockDTO.setStock(priceEntity.getStock());
+            productStockDTO.setUnit(priceEntity.getProduct().getUnit());
+            productStockDTO.setSellPrice(priceEntity.getPrice().toString());
+            productStockDTO.setImageUrl(priceEntity.getProduct().getImageUrl());
+            productStockDTO.setDescription(priceEntity.getProduct().getDescription());
+            productStockDTO.setPurchasePrice(priceEntity.getPurchasePrice().toString());
+
+            Object tauxObj = price[1];
+            Double taux = 0.0;
+
+            if (tauxObj != null) {
+                taux = ((Number) tauxObj).doubleValue();
+            }
+
+            if (taux > 0) {
+                double prixInitial = priceEntity.getPrice().doubleValue();
+                double prixPromo = prixInitial * (1 - (taux / 100));
+
+                productStockDTO.setPricePromo(String.valueOf(prixPromo));
+                productStockDTO.setTaux(String.valueOf(taux));
+                productStockDTO.setInPromotion(true);
+            } else {
+                productStockDTO.setPricePromo(null);
+                productStockDTO.setTaux(null);
+                productStockDTO.setInPromotion(false);
+            }
+
+            productStockDTOList.add(productStockDTO);
+        }
+
+        return productStockDTOList;
+
+
+        /*
         return prices.stream().map(price -> new ProductStockDTO(
                 price.getProduct().getIdProduct(),
                 price.getProduct().getName(),
@@ -124,14 +206,15 @@ public class ProductService {
                 price.getProduct().getDescription(),
                 price.getPurchasePrice().toString()
         )).toList();
+         */
     }
 
     @Transactional
-    public void updateProduct(String idProduct , UpdateProductDTO updateProductDTO) {
+    public void updateProduct(String idProduct , UpdateProductDTO updateProductDTO , String idQuincaillerie) {
 
         Product product = productInterface.getProduct(idProduct);
 
-        Price price = priceInterface.findByProduct(product);
+        Price price = priceInterface.findByProductAndQuincaillerie( idProduct , idQuincaillerie);
 
         if(price == null){
             throw new ProductNotFoundException("Le produit "+updateProductDTO.getName()+" n'existe pas");

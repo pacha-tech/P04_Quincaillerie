@@ -81,4 +81,20 @@ public class GenerateID {
         }
         return sb.toString();
     }
+
+    public static String GenerateCampagneID() {
+        StringBuilder sb = new StringBuilder("CAMP");
+        for (int i = 0; i < 6; i++) {
+            sb.append(ALPHABET.charAt(RANDOM.nextInt(ALPHABET.length())));
+        }
+        return sb.toString();
+    }
+
+    public static String GeneratePromotionID() {
+        StringBuilder sb = new StringBuilder("PROMO");
+        for (int i = 0; i < 5; i++) {
+            sb.append(ALPHABET.charAt(RANDOM.nextInt(ALPHABET.length())));
+        }
+        return sb.toString();
+    }
 }

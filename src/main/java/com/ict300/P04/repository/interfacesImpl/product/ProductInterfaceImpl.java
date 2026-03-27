@@ -9,6 +9,7 @@ import jakarta.persistence.PersistenceContext;
 import org.springframework.stereotype.Repository;
 
 import java.math.BigDecimal;
+import java.time.LocalDate;
 import java.util.List;
 
 @Repository
@@ -73,5 +74,22 @@ public class ProductInterfaceImpl implements ProductCustomInterface {
         return entityManager.createQuery(jpql , Price.class)
                 .setParameter("id" , quincaillerie)
                 .getResultList();
+    }
+
+    @Override
+    public List<Object[]> getProductByQuincailleries(Quincaillerie quincaillerie) {
+        String jpql = "SELECT pr, p.campagnePromotion.tauxRemise " +
+                "FROM Price pr " +
+                "LEFT JOIN Promotion p ON p.price.idPrice = pr.idPrice " +
+                "AND p.campagnePromotion.estActif = true " +
+                "AND p.campagnePromotion.dateDebut <= :now " +
+                "AND p.campagnePromotion.dateFin >= :now " +
+                "WHERE pr.quincaillerie = :Quincaillerie";
+
+        return entityManager.createQuery(jpql , Object[].class)
+                .setParameter("Quincaillerie", quincaillerie)
+                .setParameter("now", LocalDate.now())
+                .getResultList();
+
     }
 }

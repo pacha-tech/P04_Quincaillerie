@@ -18,9 +18,11 @@ import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
 
 import java.util.Collections;
 import java.util.List;
@@ -44,6 +46,7 @@ public class ProductController {
         return ResponseEntity.ok(results);
     }
 
+    /*
     @Operation(summary = "Ajout d'un produit pour la quincaillerie de l'utilisateur connecté")
     @PostMapping("/addProduct")
     public ResponseEntity<?> addProduct(@Valid @RequestBody AddProductDTO addProductDTO, Authentication authentication) {
@@ -81,6 +84,49 @@ public class ProductController {
         }
     }
 
+     */
+
+    @Operation(summary = "Ajout d'un produit avec image pour la quincaillerie")
+    @PostMapping(value = "/addProduct", consumes = { MediaType.MULTIPART_FORM_DATA_VALUE })
+    public ResponseEntity<?> addProduct(@RequestPart("data") @Valid AddProductDTO addProductDTO, @RequestPart(value = "image", required = false) MultipartFile image, Authentication authentication) {
+
+        if (authentication == null || !authentication.isAuthenticated()) {
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
+                    .body(new ApiError(HttpStatus.UNAUTHORIZED, "Utilisateur non authentifié"));
+        }
+
+        String uid = authentication.getName();
+
+        @SuppressWarnings("unchecked")
+        Map<String, Object> claims = (Map<String, Object>) authentication.getDetails();
+        if (claims == null) {
+            return ResponseEntity.status(HttpStatus.FORBIDDEN)
+                    .body(new ApiError(HttpStatus.FORBIDDEN, "Détails d'authentification manquants"));
+        }
+
+        String quincaillerieId = (String) claims.get("quincaillerieId");
+        if (quincaillerieId == null || quincaillerieId.trim().isEmpty()) {
+            return ResponseEntity.status(HttpStatus.FORBIDDEN)
+                    .body(new ApiError(HttpStatus.FORBIDDEN, "quincaillerieId manquant"));
+        }
+
+        log.info("Tentative d'ajout produit: {} par UID: {} (Image présente: {})",
+                addProductDTO.getName(), uid, (image != null));
+
+        try {
+            // Mise à jour de votre service pour accepter le MultipartFile
+            productService.AddProduct(addProductDTO, image, uid, quincaillerieId);
+            return ResponseEntity.ok(new ApiResponse(true, "Produit ajouté avec succès"));
+        } catch (ProductExistException e) {
+            // Laisser le GlobalExceptionHandler gérer cette exception ou la relancer
+            throw e;
+        } catch (Exception e) {
+            log.error("Erreur lors de l'ajout du produit", e);
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body(new ApiError(HttpStatus.INTERNAL_SERVER_ERROR, "Erreur serveur"));
+        }
+    }
+
     @Operation(summary = "Récupérer le stock de la quincaillerie")
     @GetMapping("/getStock")
     public ResponseEntity<List<ProductStockDTO>> getProductByQuincaillerie(Authentication authentication) {
@@ -101,7 +147,7 @@ public class ProductController {
             return ResponseEntity.status(HttpStatus.FORBIDDEN).body(Collections.emptyList());
         }
 
-        List<ProductStockDTO> stock = productService.getProductByQuincaillerie(qId);
+        List<ProductStockDTO> stock = productService.getStock(qId);
         return ResponseEntity.ok(stock);
     }
 
@@ -146,7 +192,7 @@ public class ProductController {
         log.info(String.valueOf(updateProductDTO));
 
         try {
-            productService.updateProduct(productId, updateProductDTO);
+            productService.updateProduct(productId, updateProductDTO , quincaillerieId);
 
             // Succès
             return ResponseEntity.ok(new ApiResponse(true, "Produit mis à jour avec succès"));

@@ -8,6 +8,8 @@ import jakarta.persistence.TypedQuery;
 import org.springframework.stereotype.Repository;
 
 import java.math.BigDecimal;
+import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.util.List;
 
 @Repository
@@ -96,5 +98,48 @@ public class PriceInterfaceImpl implements PriceCustomInterface {
         return entityManager.createQuery(jpql , Price.class)
                 .setParameter("id" , idPrice)
                 .getSingleResult();
+    }
+
+    @Override
+    public Price findByProductAndQuincaillerie(String idProduct, String idQuincaillerie) {
+        String jpql = "SELECT p " +
+                "FROM Price p " +
+                "WHERE p.product.idProduct = :id1 " +
+                "AND p.quincaillerie.idQuincaillerie = :id2 ";
+
+        return entityManager.createQuery(jpql , Price.class)
+                .setParameter("id1" , idProduct)
+                .setParameter("id2" , idQuincaillerie)
+                .getSingleResult();
+    }
+
+    @Override
+    public List<Price> findByQuincaillerie(String idQuincaillerie) {
+        String jpql = "SELECT p " +
+                "FROM Price p " +
+                "WHERE p.quincaillerie.idQuincaillerie = :id ";
+
+        return entityManager.createQuery(jpql , Price.class)
+                .setParameter("id1" , idQuincaillerie)
+                .getResultList();
+    }
+
+    @Override
+    public List<Price> findPricesWithoutActivePromotion(String idQuincaillerie) {
+
+        String jpql = "SELECT pr FROM Price pr " +
+                "WHERE pr.quincaillerie.idQuincaillerie = :idQuincaillerie " +
+                "AND NOT EXISTS (" +
+                "   SELECT p FROM Promotion p " +
+                "   WHERE p.price.idPrice = pr.idPrice " +
+                "   AND p.campagnePromotion.estActif = true " +
+                "   AND p.campagnePromotion.dateDebut <= :now " +
+                "   AND p.campagnePromotion.dateFin >= :now " +
+                ")";
+
+        return entityManager.createQuery(jpql, Price.class)
+                .setParameter("idQuincaillerie", idQuincaillerie)
+                .setParameter("now", LocalDate.now())
+                .getResultList();
     }
 }

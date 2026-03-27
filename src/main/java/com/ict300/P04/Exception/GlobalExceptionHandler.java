@@ -37,5 +37,10 @@ public class GlobalExceptionHandler {
     public  ResponseEntity<ApiError> handleUserNotExist(UserNotFoundException ex) {
         return new ResponseEntity<>(new ApiError(HttpStatus.NOT_FOUND, ex.getMessage()), HttpStatus.NOT_FOUND);
     }
+
+    @ExceptionHandler(AppException.class)
+    public  ResponseEntity<ApiError> handleApp(AppException ex) {
+        return new ResponseEntity<>(new ApiError(HttpStatus.INTERNAL_SERVER_ERROR, ex.getMessage()), HttpStatus.INTERNAL_SERVER_ERROR);
+    }
 }
 

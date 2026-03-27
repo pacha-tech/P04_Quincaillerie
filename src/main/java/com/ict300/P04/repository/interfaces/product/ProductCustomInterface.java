@@ -5,6 +5,7 @@ import com.ict300.P04.Entite.Product;
 import com.ict300.P04.Entite.Quincaillerie;
 
 import java.math.BigDecimal;
+import java.time.LocalDateTime;
 import java.util.List;
 
 public interface ProductCustomInterface {
@@ -13,4 +14,5 @@ public interface ProductCustomInterface {
     List<String> findNameOnly(String name);
     Product getProduct(String idProduct);
     List<Price> getProductByQuincaillerie(Quincaillerie quincaillerie);
+    List<Object[]> getProductByQuincailleries(Quincaillerie quincaillerie);
 }
