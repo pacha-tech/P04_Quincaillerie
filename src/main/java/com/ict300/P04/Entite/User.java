@@ -30,9 +30,6 @@ public class User {
     @Column(name = "Last_login")
     private LocalDateTime lastLogin;
 
-    //@Column(name = "Password")
-    //private String password;
-
     @Column(name = "Role")
     private String role;
 
@@ -41,6 +38,13 @@ public class User {
 
     @Column(name = "Status")
     private String status;
+
+    @Column(name = "fcm_token")
+    private String fcmToken;
+
+    @Enumerated(EnumType.STRING)
+    @Column(name = "statut_online", columnDefinition = "ENUM('ON_LINE', 'OFF_LINE') DEFAULT 'OFF_LINE'")
+    private UserStatus statut_online = UserStatus.OFF_LINE;
 
     @OneToOne(mappedBy = "admin")
     private Quincaillerie quincaillerie;
@@ -68,4 +72,18 @@ public class User {
 
     @OneToMany(mappedBy = "user")
     private List<Panier> paniers = new ArrayList<>();
+
+    @OneToMany(mappedBy = "sender")
+    private List<Conversation> conversations = new ArrayList<>();
+
+    @OneToMany(mappedBy = "sender")
+    private List<Message> messages = new ArrayList<>();
+
+    @OneToMany(mappedBy = "recipient")
+    private List<Notification> notifications = new ArrayList<>();
+
+    public enum UserStatus {
+        ON_LINE,
+        OFF_LINE
+    }
 }

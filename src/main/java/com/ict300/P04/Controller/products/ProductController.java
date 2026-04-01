@@ -238,7 +238,7 @@ public class ProductController {
         } catch (Exception e) {
             log.error("Erreur inattendue lors de la suppression du produit", e);
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
-                    .body(new ApiError(HttpStatus.INTERNAL_SERVER_ERROR, "Erreur serveur lors de l'ajout"));
+                    .body(new ApiError(HttpStatus.INTERNAL_SERVER_ERROR, "Erreur serveur lors de la suspression"));
         }
     }
 }

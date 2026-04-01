@@ -89,4 +89,7 @@ public class Quincaillerie {
 
     @OneToMany(mappedBy = "quincaillerie")
     private List<CampagnePromotion> campagnePromotions = new ArrayList<>();
+
+    @OneToMany(mappedBy = "receiver")
+    private List<Conversation> conversations = new ArrayList<>();
 }

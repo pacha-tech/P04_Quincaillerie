@@ -97,4 +97,20 @@ public class GenerateID {
         }
         return sb.toString();
     }
+
+    public static String GenerateMessageID() {
+        StringBuilder sb = new StringBuilder("MESS");
+        for (int i = 0; i < 6; i++) {
+            sb.append(ALPHABET.charAt(RANDOM.nextInt(ALPHABET.length())));
+        }
+        return sb.toString();
+    }
+
+    public static String GenerateConversationID() {
+        StringBuilder sb = new StringBuilder("CONV");
+        for (int i = 0; i < 6; i++) {
+            sb.append(ALPHABET.charAt(RANDOM.nextInt(ALPHABET.length())));
+        }
+        return sb.toString();
+    }
 }

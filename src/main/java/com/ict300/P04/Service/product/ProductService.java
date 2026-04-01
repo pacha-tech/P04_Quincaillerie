@@ -94,16 +94,16 @@ public class ProductService {
         }
 
 
-        /*
+
         String imageUrl = null;
         if (image != null && !image.isEmpty()) {
             try {
-                imageUrl = cloudinaryService.uploadImage(image);
+                imageUrl = cloudinaryService.uploadImageProduct(image);
             } catch (IOException e) {
                 log.error("Échec de l'upload de l'image, création du produit sans image", e);
             }
         }
-         */
+
 
         Category category = categoryInterface.getCategoty(addProductDTO.getCategoryId());
         Quincaillerie quincaillerie = quincaillerieInterface.getQuincaillerie(quincaillerieId);
@@ -113,7 +113,7 @@ public class ProductService {
         Product newProduct = new Product();
         newProduct.setIdProduct(GenerateID.GenerateProductID());
         newProduct.setName(addProductDTO.getName());
-        newProduct.setImageUrl("");
+        newProduct.setImageUrl(imageUrl);
         newProduct.setCategory(category);
         newProduct.setBrand(addProductDTO.getBrand());
         newProduct.setDescription(addProductDTO.getDescription());
@@ -147,7 +147,7 @@ public class ProductService {
 
         List<ProductStockDTO> productStockDTOList = new ArrayList<>();
 
-        //List<Price> prices = productInterface.getProductByQuincaillerie(quincaillerie);
+
         List<Object[]> prices = productInterface.getProductByQuincailleries(quincaillerie);
 
         for (Object[] price : prices) {
@@ -191,22 +191,6 @@ public class ProductService {
         }
 
         return productStockDTOList;
-
-
-        /*
-        return prices.stream().map(price -> new ProductStockDTO(
-                price.getProduct().getIdProduct(),
-                price.getProduct().getName(),
-                price.getProduct().getBrand(),
-                price.getProduct().getCategory().getName(),
-                price.getStock(),
-                price.getProduct().getUnit(),
-                price.getPrice().toString(),
-                price.getProduct().getImageUrl(),
-                price.getProduct().getDescription(),
-                price.getPurchasePrice().toString()
-        )).toList();
-         */
     }
 
     @Transactional
@@ -253,11 +237,13 @@ public class ProductService {
     public void deleteProduct(String idProduct , String quincaillerieId){
         Price price = priceInterface.getPriceByProductAndQuincaillerie(idProduct , quincaillerieId);
 
-        System.out.println("PRICE: "+price);
 
         if(price == null){
             throw new ProductNotFoundException("Ce Produit n'existe pas");
         }
+
+        System.out.println("PRICE: "+price.getIdPrice());
+
 
         priceInterface.deleteById(price.getIdPrice());
 
