@@ -50,12 +50,11 @@ public class MessageService {
             conversation.setSender(sender);
             conversation.setReceiver(receiver);
 
-            conversation = conversationInterface.save(conversation);
+            conversation = conversationInterface.saveAndFlush(conversation);
         } else {
             conversation = conversationInterface.findById(incomingMessageDTO.getIdConversation())
                     .orElseThrow(() -> new ResourceNotFoundException("Conversation non trouvée"));
         }
-
 
 
         Message message = new Message();
@@ -65,8 +64,10 @@ public class MessageService {
         message.setConversation(conversation);
         message.setSender(sender);
 
-        Message message1 = messageInterface.save(message);
+        Message message1 = messageInterface.saveAndFlush(message);
         conversation.setLastMessage(message);
+
+        conversationInterface.save(conversation);
 
         MessageDTO messageDTO = new MessageDTO();
 
@@ -77,7 +78,12 @@ public class MessageService {
         messageDTO.setEstLu(message1.getEstLu());
         messageDTO.setIdConversation(conversation.getIdConversation());
         messageDTO.setLuAt(message1.getLuAt());
-        messageDTO.setIdReceiver(incomingMessageDTO.getIdReceiver());
+
+        String realReceiverId = conversation.getSender().getIdUser().equals(idSender)
+                ? conversation.getReceiver().getIdQuincaillerie()
+                : conversation.getSender().getIdUser();
+
+        messageDTO.setIdReceiver(realReceiverId);
 
         return messageDTO;
     }
@@ -98,7 +104,8 @@ public class MessageService {
                 conversation.getSender().getName(),
                 message.getContenu(),
                 message.getEstLu(),
-                message.getLuAt()
+                message.getLuAt(),
+                message.getCreatedAt()
         )).toList();
     }
 }

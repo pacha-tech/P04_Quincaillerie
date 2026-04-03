@@ -6,10 +6,7 @@ import com.ict300.P04.DTO.product.response.ProductStockDTO;
 import com.ict300.P04.DTO.product.response.SearchProductDTO;
 import com.ict300.P04.DTO.product.response.getProductSuggestionDTO;
 import com.ict300.P04.DTO.recommadation.response.RecommendedProductDTO;
-import com.ict300.P04.Exception.ApiError;
-import com.ict300.P04.Exception.ApiResponse;
-import com.ict300.P04.Exception.ProductExistException;
-import com.ict300.P04.Exception.ProductNotFoundException;
+import com.ict300.P04.Exception.*;
 import com.ict300.P04.Service.product.ProductService;
 import com.ict300.P04.Service.recommadation.RecommandationService;
 import io.swagger.v3.oas.annotations.Operation;
@@ -23,222 +20,149 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
-
-import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 
 @Slf4j
 @RestController
 @RequestMapping("/quincaillerie/products")
-@Tag(name = "ManageProducts", description = "Gestion des produits")
+@Tag(name = "ManageProducts", description = "Gestion des produits pour la plateforme Quincaillerie")
 @RequiredArgsConstructor
 public class ProductController {
 
     private final ProductService productService;
     private final RecommandationService recommandationService;
 
-    @Operation(summary = "Rechercher des produits")
+    // --- RECHERCHE ET CONSULTATION ---
+
+    @Operation(summary = "Rechercher des produits par nom")
     @GetMapping("/search")
     public ResponseEntity<List<SearchProductDTO>> search(@RequestParam String name) {
+        log.info("Recherche de produits avec le nom: {}", name);
         List<SearchProductDTO> results = productService.SearchProductByName(name);
-        System.out.println(results);
         return ResponseEntity.ok(results);
     }
 
-    /*
-    @Operation(summary = "Ajout d'un produit pour la quincaillerie de l'utilisateur connecté")
-    @PostMapping("/addProduct")
-    public ResponseEntity<?> addProduct(@Valid @RequestBody AddProductDTO addProductDTO, Authentication authentication) {
-
-        if (authentication == null || !authentication.isAuthenticated()) {
-            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(new ApiError(HttpStatus.UNAUTHORIZED, "Utilisateur non authentifié"));
-        }
-
-        String uid = authentication.getName();
-
-        @SuppressWarnings("unchecked")
-        Map<String, Object> claims = (Map<String, Object>) authentication.getDetails();
-        if (claims == null) {
-            return ResponseEntity.status(HttpStatus.FORBIDDEN)
-                    .body(new ApiError(HttpStatus.FORBIDDEN, "Aucun détail d'authentification disponible"));
-        }
-
-        String quincaillerieId = (String) claims.get("quincaillerieId");
-        if (quincaillerieId == null || quincaillerieId.trim().isEmpty()) {
-            return ResponseEntity.status(HttpStatus.FORBIDDEN)
-                    .body(new ApiError(HttpStatus.FORBIDDEN, "quincaillerieId manquant dans les claims"));
-        }
-
-        log.info("Ajout produit par UID: {} pour quincaillerie: {}", uid, quincaillerieId);
-
-        try {
-            productService.AddProduct(addProductDTO, uid, quincaillerieId);
-            return ResponseEntity.ok(new ApiResponse(true, "Produit ajouté avec succès"));
-        } catch (ProductExistException e) {
-            throw e;
-        } catch (Exception e) {
-            log.error("Erreur inattendue lors de l'ajout produit", e);
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
-                    .body(new ApiError(HttpStatus.INTERNAL_SERVER_ERROR, "Erreur serveur lors de l'ajout"));
-        }
-    }
-
-     */
-
-    @Operation(summary = "Ajout d'un produit avec image pour la quincaillerie")
-    @PostMapping(value = "/addProduct", consumes = { MediaType.MULTIPART_FORM_DATA_VALUE })
-    public ResponseEntity<?> addProduct(@RequestPart("data") @Valid AddProductDTO addProductDTO, @RequestPart(value = "image", required = false) MultipartFile image, Authentication authentication) {
-
-        if (authentication == null || !authentication.isAuthenticated()) {
-            return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
-                    .body(new ApiError(HttpStatus.UNAUTHORIZED, "Utilisateur non authentifié"));
-        }
-
-        String uid = authentication.getName();
-
-        @SuppressWarnings("unchecked")
-        Map<String, Object> claims = (Map<String, Object>) authentication.getDetails();
-        if (claims == null) {
-            return ResponseEntity.status(HttpStatus.FORBIDDEN)
-                    .body(new ApiError(HttpStatus.FORBIDDEN, "Détails d'authentification manquants"));
-        }
-
-        String quincaillerieId = (String) claims.get("quincaillerieId");
-        if (quincaillerieId == null || quincaillerieId.trim().isEmpty()) {
-            return ResponseEntity.status(HttpStatus.FORBIDDEN)
-                    .body(new ApiError(HttpStatus.FORBIDDEN, "quincaillerieId manquant"));
-        }
-
-        log.info("Tentative d'ajout produit: {} par UID: {} (Image présente: {})",
-                addProductDTO.getName(), uid, (image != null));
-
-        try {
-            // Mise à jour de votre service pour accepter le MultipartFile
-            productService.AddProduct(addProductDTO, image, uid, quincaillerieId);
-            return ResponseEntity.ok(new ApiResponse(true, "Produit ajouté avec succès"));
-        } catch (ProductExistException e) {
-            // Laisser le GlobalExceptionHandler gérer cette exception ou la relancer
-            throw e;
-        } catch (Exception e) {
-            log.error("Erreur lors de l'ajout du produit", e);
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
-                    .body(new ApiError(HttpStatus.INTERNAL_SERVER_ERROR, "Erreur serveur"));
-        }
-    }
-
-    @Operation(summary = "Récupérer le stock de la quincaillerie")
+    @Operation(summary = "Récupérer le stock complet de la quincaillerie")
     @GetMapping("/getStock")
-    public ResponseEntity<List<ProductStockDTO>> getProductByQuincaillerie(Authentication authentication) {
-        if (authentication == null || !authentication.isAuthenticated()) {
-            return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
-                    .body(Collections.emptyList());
+    public ResponseEntity<?> getProductByQuincaillerie(Authentication authentication) {
+        String qId = getQuincaillerieId(authentication);
+        if (qId == null) return buildUnauthorizedResponse();
+        try{
+            List<ProductStockDTO> stock = productService.getStock(qId);
+            return ResponseEntity.ok(stock);
+        } catch (ResourceNotFoundException e) {
+            throw e;
         }
 
-        @SuppressWarnings("unchecked")
-        Map<String, Object> claims = (Map<String, Object>) authentication.getDetails();
-        if (claims == null) {
-            return ResponseEntity.status(HttpStatus.FORBIDDEN).body(Collections.emptyList());
-        }
-
-        String qId = (String) claims.get("quincaillerieId");
-        if (qId == null || qId.trim().isEmpty()) {
-            log.error("Claim 'quincaillerieId' manquant pour UID: {}", authentication.getName());
-            return ResponseEntity.status(HttpStatus.FORBIDDEN).body(Collections.emptyList());
-        }
-
-        List<ProductStockDTO> stock = productService.getStock(qId);
-        return ResponseEntity.ok(stock);
     }
 
-    @Operation(summary = "Produits recommandés")
-    @GetMapping("/recommendations")
-    public ResponseEntity<List<RecommendedProductDTO>> getRecommendations(@RequestParam String idProduct, @RequestParam String idQuincaillerie) {
-        List<RecommendedProductDTO> recommendations = recommandationService.getRecommendations(idProduct, idQuincaillerie);
-        return ResponseEntity.ok(recommendations);
-    }
-
-    @Operation(summary = "Suggestions auto-complétion")
+    @Operation(summary = "Suggestions pour l'auto-complétion")
     @GetMapping("/suggestions")
     public ResponseEntity<List<getProductSuggestionDTO>> getSuggestions() {
-        List<getProductSuggestionDTO> suggestions = productService.getAllSuggestions();
-        return ResponseEntity.ok(suggestions);
+        return ResponseEntity.ok(productService.getAllSuggestions());
     }
 
-    @Operation(summary = "Mise à jour partielle d'un produit (PATCH)")
-    @PatchMapping("/{id}")
-    public ResponseEntity<?> updateProduct(@PathVariable("id") String productId, @Valid @RequestBody UpdateProductDTO updateProductDTO, Authentication authentication) {
+    @Operation(summary = "Récupérer les produits recommandés")
+    @GetMapping("/recommendations")
+    public ResponseEntity<List<RecommendedProductDTO>> getRecommendations(
+            @RequestParam String idProduct,
+            @RequestParam String idQuincaillerie) {
+        return ResponseEntity.ok(recommandationService.getRecommendations(idProduct, idQuincaillerie));
+    }
 
-        if (authentication == null || !authentication.isAuthenticated()) {
-            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(new ApiError(HttpStatus.UNAUTHORIZED, "Utilisateur non authentifié"));
-        }
+    // --- OPÉRATIONS DE GESTION (CRUD) ---
 
+    @Operation(summary = "Ajouter un nouveau produit avec image")
+    @PostMapping(value = "/addProduct", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
+    public ResponseEntity<?> addProduct(
+            @RequestPart("data") @Valid AddProductDTO addProductDTO,
+            @RequestPart(value = "image", required = false) MultipartFile image,
+            Authentication authentication) {
+
+        String qId = getQuincaillerieId(authentication);
+        if (qId == null) return buildUnauthorizedResponse();
 
         String uid = authentication.getName();
-
-        @SuppressWarnings("unchecked")
-        Map<String, Object> claims = (Map<String, Object>) authentication.getDetails();
-        if (claims == null) {
-            System.out.println("Erreur 403");
-            return ResponseEntity.status(HttpStatus.FORBIDDEN).body(new ApiError(HttpStatus.FORBIDDEN, "Aucun détail d'authentification disponible"));
-        }
-
-        String quincaillerieId = (String) claims.get("quincaillerieId");
-        if (quincaillerieId == null || quincaillerieId.trim().isEmpty()) {
-            return ResponseEntity.status(HttpStatus.FORBIDDEN).body(new ApiError(HttpStatus.FORBIDDEN, "quincaillerieId manquant dans les claims"));
-        }
-
-        log.info("Mise à jour produit ID: {} par UID: {} pour quincaillerie: {}", productId, uid, quincaillerieId);
-        log.info(String.valueOf(updateProductDTO));
+        log.info("Tentative d'ajout produit: {} par UID: {} (Image: {})", addProductDTO.getName(), uid, (image != null));
 
         try {
-            productService.updateProduct(productId, updateProductDTO , quincaillerieId);
-
-            // Succès
-            return ResponseEntity.ok(new ApiResponse(true, "Produit mis à jour avec succès"));
-
-        } catch (ProductNotFoundException e) {  // À créer si besoin (produit inexistant ou pas de cette quincaillerie)
-            throw e;  // Ou return ResponseEntity.status(HttpStatus.NOT_FOUND).body(...)
+            productService.AddProduct(addProductDTO, image, uid, qId);
+            return ResponseEntity.ok(new ApiResponse(true, "Produit ajouté avec succès"));
+        } catch (ProductExistException e) {
+            throw e;
         } catch (Exception e) {
-            log.error("Erreur lors de la mise à jour du produit "+productId+" Erreur: "+e);
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
-                    .body(new ApiError(HttpStatus.INTERNAL_SERVER_ERROR, "Erreur serveur lors de la mise à jour"));
+            log.error("Erreur serveur lors de l'ajout du produit", e);
+            return buildErrorResponse(HttpStatus.INTERNAL_SERVER_ERROR, "Erreur serveur lors de l'ajout");
         }
     }
 
-    @DeleteMapping("/{id}")
-    @Operation(summary = "Supprimer un produit")
-    public ResponseEntity<?> deleteProduct(@PathVariable("id") String idProduct , Authentication authentication) {
+    @Operation(summary = "Mise à jour d'un produit existant (Données + Image)")
+    @PatchMapping(value = "/{id}", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
+    public ResponseEntity<?> updateProduct(
+            @PathVariable("id") String productId,
+            @RequestPart("data") @Valid UpdateProductDTO updateProductDTO,
+            @RequestPart(value = "image", required = false) MultipartFile image,
+            Authentication authentication) {
 
-        if (authentication == null || !authentication.isAuthenticated()) {
-            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(new ApiError(HttpStatus.UNAUTHORIZED, "Utilisateur non authentifié"));
-        }
+        String qId = getQuincaillerieId(authentication);
+        if (qId == null) return buildUnauthorizedResponse();
 
-        String uid = authentication.getName();
-
-        @SuppressWarnings("unchecked")
-        Map<String, Object> claims = (Map<String, Object>) authentication.getDetails();
-        if (claims == null) {
-            return ResponseEntity.status(HttpStatus.FORBIDDEN)
-                    .body(new ApiError(HttpStatus.FORBIDDEN, "Aucun détail d'authentification disponible"));
-        }
-
-        String quincaillerieId = (String) claims.get("quincaillerieId");
-        if (quincaillerieId == null || quincaillerieId.trim().isEmpty()) {
-            return ResponseEntity.status(HttpStatus.FORBIDDEN)
-                    .body(new ApiError(HttpStatus.FORBIDDEN, "quincaillerieId manquant dans les claims"));
-        }
-
+        log.info("Mise à jour produit ID: {} par UID: {} (Image: {})", productId, authentication.getName(), (image != null));
 
         try {
-            productService.deleteProduct(idProduct , quincaillerieId);
-            return ResponseEntity.ok(new ApiResponse(true, "Produit supprimer avec succès"));
+            productService.updateProduct(productId, updateProductDTO, image, qId);
+            return ResponseEntity.ok(new ApiResponse(true, "Produit mis à jour avec succès"));
         } catch (ProductNotFoundException e) {
             throw e;
         } catch (Exception e) {
-            log.error("Erreur inattendue lors de la suppression du produit", e);
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
-                    .body(new ApiError(HttpStatus.INTERNAL_SERVER_ERROR, "Erreur serveur lors de la suspression"));
+            log.error("Erreur lors de la mise à jour du produit {}", productId, e);
+            return buildErrorResponse(HttpStatus.INTERNAL_SERVER_ERROR, "Erreur serveur lors de la mise à jour");
         }
+    }
+
+    @Operation(summary = "Supprimer un produit")
+    @DeleteMapping("/{id}")
+    public ResponseEntity<?> deleteProduct(
+            @PathVariable("id") String idProduct,
+            Authentication authentication) {
+
+        String qId = getQuincaillerieId(authentication);
+        if (qId == null) return buildUnauthorizedResponse();
+
+        log.info("Suppression du produit ID: {} demandée par UID: {}", idProduct, authentication.getName());
+
+        try {
+            productService.deleteProduct(idProduct, qId);
+            return ResponseEntity.ok(new ApiResponse(true, "Produit supprimé avec succès"));
+        } catch (ProductNotFoundException e) {
+            throw e;
+        } catch (Exception e) {
+            log.error("Erreur lors de la suppression du produit {}", idProduct, e);
+            return buildErrorResponse(HttpStatus.INTERNAL_SERVER_ERROR, "Erreur serveur lors de la suppression");
+        }
+    }
+
+    // --- MÉTHODES PRIVÉES UTILITAIRES ---
+
+    /**
+     * Extrait de manière sécurisée le quincaillerieId des claims JWT.
+     */
+    private String getQuincaillerieId(Authentication authentication) {
+        if (authentication == null || !authentication.isAuthenticated()) return null;
+
+        Map<String, Object> claims = (Map<String, Object>) authentication.getDetails();
+        if (claims == null) return null;
+
+        return (String) claims.get("quincaillerieId");
+    }
+
+    private ResponseEntity<?> buildUnauthorizedResponse() {
+        return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
+                .body(new ApiError(HttpStatus.UNAUTHORIZED, "Accès non autorisé ou claims manquants"));
+    }
+
+    private ResponseEntity<?> buildErrorResponse(HttpStatus status, String message) {
+        return ResponseEntity.status(status).body(new ApiError(status, message));
     }
 }

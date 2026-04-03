@@ -9,5 +9,4 @@ import java.util.List;
 
 @Repository
 public interface ProductInterface extends JpaRepository<Product , String> , ProductCustomInterface {
-    List<Product> findByNameContainingIgnoreCase(String Name);
 }

@@ -27,46 +27,59 @@ public class CloudinaryService {
     }
 
     public String uploadImageProduct(MultipartFile file) throws IOException {
+        return uploadToFolder(file, "products");
+    }
+
+    public String uploadPhoto(MultipartFile file) throws IOException {
+        return uploadToFolder(file, "photos");
+    }
+
+
+    private String uploadToFolder(MultipartFile file, String folder) throws IOException {
         if (file == null || file.isEmpty()) {
             return null;
         }
 
         try {
-            log.info("Téléchargement de l'image vers Cloudinary...");
+            log.info("Téléchargement vers Cloudinary (Dossier: {})...", folder);
             Map<?, ?> uploadResult = cloudinary.uploader().upload(file.getBytes(),
                     ObjectUtils.asMap(
-                            "folder", "products",
+                            "folder", folder,
                             "resource_type", "auto"
                     ));
 
             String url = uploadResult.get("secure_url").toString();
-            log.info("Image téléchargée avec succès: {}", url);
+            log.info("Téléchargement réussi: {}", url);
             return url;
         } catch (IOException e) {
-            log.error("Erreur lors de l'upload vers Cloudinary", e);
-            throw new IOException("Impossible de télécharger l'image : " + e.getMessage());
+            log.error("Erreur Cloudinary dans le dossier {}: {}", folder, e.getMessage());
+            throw new IOException("Erreur lors du téléchargement vers Cloudinary : " + e.getMessage());
         }
     }
 
-    public String uploadPgoto(MultipartFile file) throws IOException {
-        if (file == null || file.isEmpty()) {
-            return null;
-        }
+    public void deleteImage(String imageUrl) {
+        if (imageUrl == null || imageUrl.isEmpty()) return;
 
         try {
-            log.info("Téléchargement de la photo vers Cloudinary...");
-            Map<?, ?> uploadResult = cloudinary.uploader().upload(file.getBytes(),
-                    ObjectUtils.asMap(
-                            "folder", "photos",
-                            "resource_type", "auto"
-                    ));
 
-            String url = uploadResult.get("secure_url").toString();
-            log.info("Photo téléchargée avec succès: {}", url);
-            return url;
-        } catch (IOException e) {
-            log.error("Erreur lors de l'upload vers Cloudinary", e);
-            throw new IOException("Impossible de télécharger la photo : " + e.getMessage());
+            String publicId = extractPublicId(imageUrl);
+
+            log.info("Suppression de l'image sur Cloudinary, Public ID: {}", publicId);
+            cloudinary.uploader().destroy(publicId, ObjectUtils.emptyMap());
+
+        } catch (Exception e) {
+            log.error("Erreur lors de la suppression sur Cloudinary: {}", e.getMessage());
         }
+    }
+
+    private String extractPublicId(String url) {
+
+        String split = url.split("/upload/")[1];
+
+        if (split.contains("/")) {
+            split = split.substring(split.indexOf("/") + 1);
+        }
+
+        return split.substring(0, split.lastIndexOf("."));
     }
 }

@@ -3,6 +3,7 @@ package com.ict300.P04.Controller.message;
 import com.ict300.P04.DTO.message.response.ConversationDTO;
 import com.ict300.P04.Exception.ApiError;
 import com.ict300.P04.Exception.ProductNotFoundException;
+import com.ict300.P04.Exception.UserNotFoundException;
 import com.ict300.P04.Service.message.ConversationService;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -29,34 +30,39 @@ public class ConversationController {
     public ResponseEntity<?> getAllConversationByUser(Authentication authentication) {
 
         if (authentication == null || !authentication.isAuthenticated()) {
-            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(new ApiError(HttpStatus.UNAUTHORIZED, "Utilisateur non authentifié"));
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
+                    .body(new ApiError(HttpStatus.UNAUTHORIZED, "Utilisateur non authentifié"));
         }
 
-        String uid = authentication.getName();
+        String uid = authentication.getName(); // C'est l'UID Firebase du client
 
         @SuppressWarnings("unchecked")
         Map<String, Object> claims = (Map<String, Object>) authentication.getDetails();
-        if (claims == null) {
-            return ResponseEntity.status(HttpStatus.FORBIDDEN)
-                    .body(new ApiError(HttpStatus.FORBIDDEN, "Aucun détail d'authentification disponible"));
-        }
-
         String role = (String) claims.get("role");
+
         if (role == null || role.trim().isEmpty()) {
             return ResponseEntity.status(HttpStatus.FORBIDDEN)
-                    .body(new ApiError(HttpStatus.FORBIDDEN, "Pas de Role vous devez etre connectez"));
+                    .body(new ApiError(HttpStatus.FORBIDDEN, "Rôle manquant"));
         }
 
-
         try {
-            List<ConversationDTO> response = conversationService.getAllConversationByUser(uid);
+            List<ConversationDTO> response;
+
+            // LOGIQUE DISTINCTE SELON LE RÔLE
+            if ("vendeur".equalsIgnoreCase(role)) {
+                // Pour le vendeur, on récupère l'ID de sa quincaillerie stocké dans les claims
+                String idQuincaillerie = (String) claims.get("quincaillerieId");
+                response = conversationService.getAllByQuincaillerie(idQuincaillerie);
+            } else {
+                // Pour le client (rôle "client" ou autre), on utilise son UID
+                response = conversationService.getAllByClient(uid);
+            }
+
             return ResponseEntity.ok(response);
-        } catch (ProductNotFoundException e) {
-            throw e;
         } catch (Exception e) {
-            System.out.println("Erreur: "+e);
+            System.err.println("Erreur: " + e.getMessage());
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
-                    .body(new ApiError(HttpStatus.INTERNAL_SERVER_ERROR, "Erreur serveur lors de la verification de l'existance du produit dans le panier"));
+                    .body(new ApiError(HttpStatus.INTERNAL_SERVER_ERROR, "Erreur lors de la récupération"));
         }
     }
 }

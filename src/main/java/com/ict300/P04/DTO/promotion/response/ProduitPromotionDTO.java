@@ -11,5 +11,6 @@ public class ProduitPromotionDTO {
     private String id;
     private String nom;
     private String category;
+    private String imageUrl;
     private BigDecimal price;
 }

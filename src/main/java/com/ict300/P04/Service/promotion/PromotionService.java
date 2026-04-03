@@ -124,13 +124,16 @@ public class PromotionService {
 
         List<Price> prices = priceInterface.findPricesWithoutActivePromotion(idQuincaillerie);
 
-        return prices.stream().map(price -> new ProduitPromotionDTO(
-                price.getIdPrice(),
-                price.getProduct() != null ? price.getProduct().getName() : "",
-                price.getProduct() != null && price.getProduct().getCategory() != null
-                        ? price.getProduct().getCategory().getName() : "",
-                price.getPrice()
-        )).toList();
+        return prices.stream().map(price -> {
+            assert price.getProduct() != null;
+            return new ProduitPromotionDTO(
+                    price.getIdPrice(),
+                    price.getProduct().getName(),
+                    price.getProduct().getCategory() != null ? price.getProduct().getCategory().getName() : "",
+                    price.getProduct().getImageUrl(),
+                    price.getPrice()
+            );
+        }).toList();
     }
 
 
@@ -156,7 +159,5 @@ public class PromotionService {
             );
         }).toList();
     }
-
-
 
 }

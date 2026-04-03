@@ -15,4 +15,5 @@ public interface ProductCustomInterface {
     Product getProduct(String idProduct);
     List<Price> getProductByQuincaillerie(Quincaillerie quincaillerie);
     List<Object[]> getProductByQuincailleries(Quincaillerie quincaillerie);
+    List<Object[]> findByNameContainingIgnoreCase(String Name);
 }

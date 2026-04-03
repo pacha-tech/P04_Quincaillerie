@@ -3,6 +3,7 @@ package com.ict300.P04.Controller.message;
 import com.ict300.P04.DTO.message.response.MessageDTO;
 import com.ict300.P04.DTO.message.request.IncomingMessageDTO;
 import com.ict300.P04.Service.message.MessageService;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.messaging.handler.annotation.MessageMapping;
 import org.springframework.messaging.handler.annotation.Payload;
@@ -12,6 +13,7 @@ import org.springframework.stereotype.Controller;
 
 import java.util.Map;
 
+@Slf4j
 @Controller
 public class MessageWebSocketController {
 
@@ -24,15 +26,19 @@ public class MessageWebSocketController {
 
     @MessageMapping("/chat")
     public void processMessageFromFlutter(@Payload IncomingMessageDTO incomingMessageDTO, Authentication authentication) {
+        log.info("CETTE FOIS CA DOIT S'AFFICHER ! Data: " + incomingMessageDTO);
         try {
             if (authentication == null || !authentication.isAuthenticated()) {
+                log.info("Pas Authentifier ");
+
                 return;
             }
 
             String uid = authentication.getName();
 
-            MessageDTO savedMessage = messageService.enregistrerMessage(incomingMessageDTO, uid);
 
+
+            MessageDTO savedMessage = messageService.enregistrerMessage(incomingMessageDTO, uid);
 
             messagingTemplate.convertAndSendToUser(
                     savedMessage.getIdReceiver(),
@@ -56,6 +62,7 @@ public class MessageWebSocketController {
         } catch (Exception e) {
             if (authentication != null) {
                 envoyerErreur(authentication.getName(), "Erreur lors de l'envoi : " + e.getMessage());
+                System.out.println(e.getMessage());
             }
         }
     }

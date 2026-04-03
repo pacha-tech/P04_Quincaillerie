@@ -16,4 +16,5 @@ public class MessageDTO {
     private String contenu;
     private Boolean estLu;
     private LocalDateTime luAt;
+    private LocalDateTime createdAt;
 }

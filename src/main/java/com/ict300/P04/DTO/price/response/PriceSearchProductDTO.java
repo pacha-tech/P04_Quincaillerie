@@ -1,10 +1,12 @@
 package com.ict300.P04.DTO.price.response;
 
+import lombok.AllArgsConstructor;
 import lombok.Data;
+import lombok.NoArgsConstructor;
 
 import java.math.BigDecimal;
 
-@Data
+@Data  @AllArgsConstructor @NoArgsConstructor
 public class PriceSearchProductDTO {
     private String quincaillerieName;
     private String idQuincaillerie;
@@ -13,14 +15,8 @@ public class PriceSearchProductDTO {
     private String idPrice;
     private BigDecimal latitudeQuincaillerie;
     private BigDecimal longitudeQuincaillerie;
+    private String pricePromo;
+    private boolean inPromotion;
+    private String taux;
 
-    public PriceSearchProductDTO(String quincaillerieName , String idQuincaillerie , BigDecimal price , int stock , String idPrice , BigDecimal latitudeQuincaillerie , BigDecimal longitudeQuincaillerie){
-        this.quincaillerieName = quincaillerieName;
-        this.idQuincaillerie = idQuincaillerie;
-        this.price = price;
-        this.stock = stock;
-        this.idPrice = idPrice;
-        this.latitudeQuincaillerie = latitudeQuincaillerie;
-        this.longitudeQuincaillerie = longitudeQuincaillerie;
-    }
 }

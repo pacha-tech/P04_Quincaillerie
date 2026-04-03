@@ -49,6 +49,7 @@ public class MessageController {
 
         try {
             List<MessageDTO> response = messageService.getAllMessageByConversation(idConversation);
+            System.out.println(response);
             return ResponseEntity.ok(response);
         } catch (ProductNotFoundException e) {
             throw e;
