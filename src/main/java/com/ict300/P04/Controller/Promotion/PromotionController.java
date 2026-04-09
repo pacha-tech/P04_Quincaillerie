@@ -1,5 +1,6 @@
 package com.ict300.P04.Controller.Promotion;
 
+import com.ict300.P04.DTO.product.response.SearchProductDTO;
 import com.ict300.P04.DTO.promotion.request.AddPromotionDTO;
 import com.ict300.P04.DTO.promotion.response.PromotionDTO;
 import com.ict300.P04.DTO.promotion.response.ProduitPromotionDTO;
@@ -136,6 +137,23 @@ public class PromotionController {
                     .body(new ApiError(HttpStatus.INTERNAL_SERVER_ERROR, "Erreur serveur lors de suppression de la promo"));
         }
     }
+
+    @GetMapping("/allProductInPromotion")
+    @Operation(summary = "Get tous les produit qui sont en promotion")
+    public ResponseEntity<?> getAllProductInPromotion() {
+
+        try {
+            List<SearchProductDTO> produitPromotionDTOs = promotionService.getAllProduitInPromotionGrouped();
+            return ResponseEntity.ok(produitPromotionDTOs);
+        } catch (ResourceNotFoundException e) {
+            throw e;
+        } catch (Exception e) {
+            log.error("Erreur inattendue lors de la recuperation des produits qui sont en promotion", e);
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body(new ApiError(HttpStatus.INTERNAL_SERVER_ERROR, "Erreur serveur lors de la recuperation de tous les produits en promotion"));
+        }
+    }
+
 
     @GetMapping("/allPromotion")
     @Operation(summary = "Get tous les promotions d'une quincaillerie")

@@ -46,6 +46,7 @@ public class SecurityConfig {
                         .requestMatchers("/quincaillerie/quincaillerie/registerQuincaillerie").authenticated()
                         .requestMatchers("/quincaillerie/category/addCategory").hasRole("VENDEUR")
                         .requestMatchers("/quincaillerie/category/allCategory").permitAll()
+                        .requestMatchers("/quincaillerie/promotion/allProductInPromotion").permitAll()
                         .requestMatchers("/quincaillerie/promotion/**").hasRole("VENDEUR")
                         .requestMatchers("/quincaillerie/panier/**").permitAll()
                         .requestMatchers("/v3/api-docs/**").permitAll()

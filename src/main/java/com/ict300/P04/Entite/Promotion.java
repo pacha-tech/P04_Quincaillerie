@@ -4,7 +4,7 @@ import jakarta.persistence.*;
 import lombok.Data;
 
 
-@Table(name = "\"Promotion\"")
+@Table(name = "Promotion")
 @Entity
 @Data
 public class Promotion {
@@ -17,6 +17,6 @@ public class Promotion {
     private Price price;
 
     @ManyToOne
-    @JoinColumn(name = "id_campagnePromotion")
+    @JoinColumn(name = "id_campagne_promotion")
     private CampagnePromotion campagnePromotion;
 }

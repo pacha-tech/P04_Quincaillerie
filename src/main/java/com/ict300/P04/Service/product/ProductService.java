@@ -44,32 +44,6 @@ public class ProductService {
 
 
 
-    /*
-    public List<SearchProductDTO> SearchProductByName(String name) {
-
-        return productInterface.findByNameContainingIgnoreCase(name).stream()
-                .map(product -> new SearchProductDTO(
-                        product.getIdProduct(),
-                        product.getCategory().getIdCategory(),
-                        product.getName(),
-                        product.getUnit(),
-                        product.getPrices().stream().map(price -> new PriceSearchProductDTO(
-                                price.getQuincaillerie().getStoreName(),
-                                price.getQuincaillerie().getIdQuincaillerie(),
-                                price.getPrice(),
-                                price.getStock(),
-                                price.getIdPrice(),
-                                price.getQuincaillerie().getLatitude(),
-                                price.getQuincaillerie().getLongitude()
-                                //pricePromo;
-                                //inPromotion;
-                                //taux;
-                        )).toList(),
-                        product.getDescription()
-                )).toList();
-    }
-     */
-
     public List<SearchProductDTO> SearchProductByName(String query) {
 
         List<Object[]> results = productInterface.findByNameContainingIgnoreCase(query);
@@ -93,7 +67,7 @@ public class ProductService {
                     price.getIdPrice(),
                     price.getQuincaillerie().getLatitude(),
                     price.getQuincaillerie().getLongitude(),
-                    pricePromo == null ? "" : pricePromo.toString(),
+                    pricePromo == null ? 0.0 : pricePromo,
                     inPromo,
                     taux.toString()
             );
@@ -109,6 +83,7 @@ public class ProductService {
                     p.getCategory().getIdCategory(),
                     p.getName(),
                     p.getUnit(),
+                    p.getImageUrl(),
                     entry.getValue(),
                     p.getDescription()
             );

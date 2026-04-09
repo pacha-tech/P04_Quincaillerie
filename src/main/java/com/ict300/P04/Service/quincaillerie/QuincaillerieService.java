@@ -29,12 +29,18 @@ public class QuincaillerieService {
         QuincaillerieDetailsDTO quincaillerieDetailsDTO = new QuincaillerieDetailsDTO();
         Quincaillerie quincaillerie = quincaillerieInterface.getQuincaillerie(idQuincaillerie);
 
-         quincaillerieDetailsDTO.setName(quincaillerie.getStoreName());
-         quincaillerieDetailsDTO.setQuartier(quincaillerie.getQuartier());
-         quincaillerieDetailsDTO.setAverageRating(quincaillerie.getAverageRating());
-         quincaillerieDetailsDTO.setVille(quincaillerie.getCity());
-         quincaillerieDetailsDTO.setStatus(quincaillerie.getStatus());
-         quincaillerieDetailsDTO.setTelephone(quincaillerie.getPhone());
+        quincaillerieDetailsDTO.setName(quincaillerie.getStoreName());
+        quincaillerieDetailsDTO.setRegion(quincaillerie.getRegion());
+        quincaillerieDetailsDTO.setVille(quincaillerie.getCity());
+        quincaillerieDetailsDTO.setQuartier(quincaillerie.getQuartier());
+        quincaillerieDetailsDTO.setPrecision(quincaillerie.getPrecision());
+        quincaillerieDetailsDTO.setTelephone(quincaillerie.getPhone());
+        quincaillerieDetailsDTO.setAverageRating(quincaillerie.getAverageRating());
+        quincaillerieDetailsDTO.setPhotoUrl(quincaillerie.getPhotoUrl());
+        quincaillerieDetailsDTO.setLongitude(quincaillerie.getLongitude());
+        quincaillerieDetailsDTO.setLatitude(quincaillerie.getLatitude());
+        quincaillerieDetailsDTO.setStatus(quincaillerie.getStatus());
+        quincaillerieDetailsDTO.setStatus(quincaillerie.getStatus());
 
          return quincaillerieDetailsDTO;
     }

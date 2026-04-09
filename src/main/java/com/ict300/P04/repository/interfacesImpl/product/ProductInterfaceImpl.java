@@ -6,6 +6,7 @@ import com.ict300.P04.Entite.Quincaillerie;
 import com.ict300.P04.repository.interfaces.product.ProductCustomInterface;
 import jakarta.persistence.EntityManager;
 import jakarta.persistence.PersistenceContext;
+import org.hibernate.engine.jdbc.env.internal.LobCreationLogging_$logger;
 import org.springframework.stereotype.Repository;
 
 import java.math.BigDecimal;
@@ -19,19 +20,26 @@ public class ProductInterfaceImpl implements ProductCustomInterface {
     private EntityManager entityManager;
 
     @Override
-    public List<Product> findRecommendationByProductAndCategoryAndQuincaillerie(String categoryId, String productId, String quincaillerieId) {
-        String jpql = "SELECT p FROM Product p " +
-                "JOIN p.prices pr "+
+    public List<Object[]> findRecommendationByProductAndCategoryAndQuincaillerie(String categoryId, String productId, String quincaillerieId) {
+        // Utilisation de pr.idPrice pour la jointure de promotion pour être plus précis
+        String jpql = "SELECT p, pro.campagnePromotion.tauxRemise " +
+                "FROM Product p " +
+                "JOIN p.prices pr " +
+                "LEFT JOIN Promotion pro ON pro.price.idPrice = pr.idPrice " +
+                "AND pro.campagnePromotion.estActif = true " +
+                "AND pro.campagnePromotion.dateDebut <= :now " +
+                "AND pro.campagnePromotion.dateFin >= :now " +
                 "WHERE p.category.idCategory = :catId " +
                 "AND pr.quincaillerie.idQuincaillerie = :quinId " +
                 "AND p.idProduct <> :prodId " +
                 "ORDER BY FUNCTION('RAND')";
 
-        return entityManager.createQuery(jpql, Product.class)
+        return entityManager.createQuery(jpql, Object[].class)
                 .setParameter("catId", categoryId)
                 .setParameter("quinId", quincaillerieId)
                 .setParameter("prodId", productId)
-                .setMaxResults(5) // Limite à 5 produits pour Flutter
+                .setParameter("now", LocalDate.now())
+                .setMaxResults(5)
                 .getResultList();
     }
 

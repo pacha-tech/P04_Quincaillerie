@@ -142,4 +142,19 @@ public class PriceInterfaceImpl implements PriceCustomInterface {
                 .setParameter("now", LocalDate.now())
                 .getResultList();
     }
+
+    @Override
+    public List<Object[]> findPricesWithActivePromotion() {
+
+        String jpql = "SELECT p.price, p.campagnePromotion.tauxRemise " +
+                "FROM Promotion p " +
+                "WHERE p.campagnePromotion.estActif = true " +
+                "AND p.campagnePromotion.dateDebut <= :now " +
+                "AND p.campagnePromotion.dateFin >= :now " +
+                "ORDER BY p.campagnePromotion.tauxRemise DESC";
+
+        return entityManager.createQuery(jpql, Object[].class)
+                .setParameter("now", LocalDate.now())
+                .getResultList();
+    }
 }

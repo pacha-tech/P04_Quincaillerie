@@ -65,9 +65,7 @@ public class ProductController {
 
     @Operation(summary = "Récupérer les produits recommandés")
     @GetMapping("/recommendations")
-    public ResponseEntity<List<RecommendedProductDTO>> getRecommendations(
-            @RequestParam String idProduct,
-            @RequestParam String idQuincaillerie) {
+    public ResponseEntity<List<RecommendedProductDTO>> getRecommendations(@RequestParam String idProduct, @RequestParam String idQuincaillerie) {
         return ResponseEntity.ok(recommandationService.getRecommendations(idProduct, idQuincaillerie));
     }
 
@@ -75,9 +73,7 @@ public class ProductController {
 
     @Operation(summary = "Ajouter un nouveau produit avec image")
     @PostMapping(value = "/addProduct", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
-    public ResponseEntity<?> addProduct(
-            @RequestPart("data") @Valid AddProductDTO addProductDTO,
-            @RequestPart(value = "image", required = false) MultipartFile image,
+    public ResponseEntity<?> addProduct(@RequestPart("data") @Valid AddProductDTO addProductDTO, @RequestPart(value = "image", required = false) MultipartFile image,
             Authentication authentication) {
 
         String qId = getQuincaillerieId(authentication);
@@ -99,11 +95,7 @@ public class ProductController {
 
     @Operation(summary = "Mise à jour d'un produit existant (Données + Image)")
     @PatchMapping(value = "/{id}", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
-    public ResponseEntity<?> updateProduct(
-            @PathVariable("id") String productId,
-            @RequestPart("data") @Valid UpdateProductDTO updateProductDTO,
-            @RequestPart(value = "image", required = false) MultipartFile image,
-            Authentication authentication) {
+    public ResponseEntity<?> updateProduct(@PathVariable("id") String productId, @RequestPart("data") @Valid UpdateProductDTO updateProductDTO, @RequestPart(value = "image", required = false) MultipartFile image, Authentication authentication) {
 
         String qId = getQuincaillerieId(authentication);
         if (qId == null) return buildUnauthorizedResponse();
@@ -123,9 +115,7 @@ public class ProductController {
 
     @Operation(summary = "Supprimer un produit")
     @DeleteMapping("/{id}")
-    public ResponseEntity<?> deleteProduct(
-            @PathVariable("id") String idProduct,
-            Authentication authentication) {
+    public ResponseEntity<?> deleteProduct(@PathVariable("id") String idProduct, Authentication authentication) {
 
         String qId = getQuincaillerieId(authentication);
         if (qId == null) return buildUnauthorizedResponse();
@@ -143,11 +133,8 @@ public class ProductController {
         }
     }
 
-    // --- MÉTHODES PRIVÉES UTILITAIRES ---
 
-    /**
-     * Extrait de manière sécurisée le quincaillerieId des claims JWT.
-     */
+
     private String getQuincaillerieId(Authentication authentication) {
         if (authentication == null || !authentication.isAuthenticated()) return null;
 

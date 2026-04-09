@@ -19,7 +19,7 @@ import java.util.Map;
 
 @RestController
 @RequestMapping("/quincaillerie/conversation")
-@Tag(name = "MessagePanier", description = "Gestion des message")
+@Tag(name = "Conversation", description = "Gestion des conversations")
 public class ConversationController {
 
     @Autowired

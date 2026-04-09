@@ -11,7 +11,7 @@ import java.util.List;
 
 @Entity
 @Data
-@Table(name = "\"Quincaillerie\"")
+@Table(name = "Quincaillerie")
 public class Quincaillerie {
     @Id
     @Column(name = "id_quincaillerie" , length = 10)

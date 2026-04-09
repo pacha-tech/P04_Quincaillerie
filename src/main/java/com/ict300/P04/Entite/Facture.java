@@ -10,7 +10,7 @@ import java.util.List;
 
 @Entity
 @Data
-@Table(name = "\"Facture\"")
+@Table(name = "Facture")
 public class Facture {
     @Id
     @Column(name = "id_facture" , length = 10)

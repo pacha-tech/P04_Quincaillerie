@@ -1,8 +1,10 @@
 package com.ict300.P04.DTO.product.response;
 
+import lombok.AllArgsConstructor;
 import lombok.Data;
+import lombok.NoArgsConstructor;
 
-@Data
+@Data  @AllArgsConstructor @NoArgsConstructor
 public class getProductSuggestionDTO {
     private String id;
     private String nom;
@@ -12,17 +14,4 @@ public class getProductSuggestionDTO {
     private String descriptionCategorie;
     private String brand;
     private String unite;
-
-    public getProductSuggestionDTO(String id , String nom , String categorieId , String categoryName , String descriptionCategorie , String descriptionProduit , String brand , String unite){
-        this.id = id;
-        this.nom = nom;
-        this.categorieId = categorieId;
-        this.categoryName = categoryName;
-        this.descriptionProduit = descriptionProduit;
-        this.descriptionCategorie = descriptionCategorie;
-        this.brand = brand;
-        this.unite = unite;
-    }
-
-    public getProductSuggestionDTO(){}
 }

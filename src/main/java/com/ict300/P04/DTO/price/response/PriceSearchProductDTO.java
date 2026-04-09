@@ -15,7 +15,7 @@ public class PriceSearchProductDTO {
     private String idPrice;
     private BigDecimal latitudeQuincaillerie;
     private BigDecimal longitudeQuincaillerie;
-    private String pricePromo;
+    private double pricePromo;
     private boolean inPromotion;
     private String taux;
 

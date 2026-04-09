@@ -9,6 +9,5 @@ import java.util.List;
 
 @Repository
 public interface PanierInterface extends JpaRepository<Panier, String> , PanierCustomInterface {
-    List<Panier> findPanierByUser(User user);
     void deletePanierByUser(User user);
 }

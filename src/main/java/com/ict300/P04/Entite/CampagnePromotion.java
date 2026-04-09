@@ -10,10 +10,10 @@ import java.util.List;
 
 @Entity
 @Data
-@Table(name = "\"CampagnePromotion\"")
+@Table(name = "CampagnePromotion")
 public class CampagnePromotion {
     @Id
-    @Column(name = "id_campagnePromotion" , length = 10)
+    @Column(name = "id_campagne_promotion" , length = 10)
     private String idCampagnePromotion;
 
     @Column(precision = 5 , scale = 2 , name = "Taux_remise")

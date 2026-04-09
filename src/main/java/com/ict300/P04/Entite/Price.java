@@ -10,7 +10,7 @@ import java.util.List;
 
 @Entity
 @Data
-@Table(name = "\"Price\"")
+@Table(name = "Price")
 public class Price {
     @Id
     @Column(name = "id_price" , length = 10)
@@ -24,6 +24,7 @@ public class Price {
     @JoinColumn(name = "id_quincaillerie")
     private Quincaillerie quincaillerie;
 
+    @Column(name = "Update_date")
     private LocalDateTime updateDate;
 
     @ManyToOne

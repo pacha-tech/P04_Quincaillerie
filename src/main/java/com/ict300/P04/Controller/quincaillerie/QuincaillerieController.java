@@ -22,13 +22,40 @@ public class QuincaillerieController {
     @Autowired
     private QuincaillerieService quincaillerieService;
 
-    @Operation(summary = "Details quincaillerie", description = "details de la quincaillerie")
+    @Operation(summary = "Details quincaillerie", description = "Récupère les détails via ID ou via l'utilisateur authentifié")
     @GetMapping("/details")
-    public ResponseEntity<QuincaillerieDetailsDTO> getDetails(@RequestParam String idQuincaillerie) {
+    public ResponseEntity<?> getDetails(@RequestParam(required = false) String idQuincaillerie, Authentication authentication) {
 
-        QuincaillerieDetailsDTO detailQuincaillerie = quincaillerieService.getInfoQuincaillerei(idQuincaillerie);
+        String finalId = null;
 
-        return ResponseEntity.ok(detailQuincaillerie);
+
+        if (idQuincaillerie != null && !idQuincaillerie.trim().isEmpty()) {
+            finalId = idQuincaillerie;
+        } else if (authentication != null && authentication.isAuthenticated()) {
+            @SuppressWarnings("unchecked")
+            Map<String, Object> claims = (Map<String, Object>) authentication.getDetails();
+
+            if (claims != null) {
+                String quincaillerieIdFromClaims = (String) claims.get("quincaillerieId");
+                if (quincaillerieIdFromClaims != null && !quincaillerieIdFromClaims.trim().isEmpty()) {
+                    finalId = quincaillerieIdFromClaims;
+                }
+            }
+        }
+
+
+        if (finalId == null) {
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST)
+                    .body(new ApiError(HttpStatus.BAD_REQUEST, "Identifiant de quincaillerie manquant (paramètre ou session)"));
+        }
+
+        try {
+            QuincaillerieDetailsDTO detailQuincaillerie = quincaillerieService.getInfoQuincaillerei(finalId);
+            return ResponseEntity.ok(detailQuincaillerie);
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND)
+                    .body(new ApiError(HttpStatus.NOT_FOUND, "Quincaillerie non trouvée"));
+        }
     }
 
     @PostMapping("/registerQuincaillerie")

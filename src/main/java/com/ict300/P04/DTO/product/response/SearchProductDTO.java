@@ -13,6 +13,7 @@ public class SearchProductDTO {
     private String idCategory;
     private String name;
     private String unite;
+    private String imageUrl;
     private List<PriceSearchProductDTO> priceSearchProductsDTO;
     private String description;
 

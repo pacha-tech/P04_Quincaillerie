@@ -9,7 +9,7 @@ import java.util.List;
 
 @Entity
 @Data
-@Table(name = "\"User\"")
+@Table(name = "User")
 public class User {
     @Id
     @Column(name = "id_user" , length = 128)
