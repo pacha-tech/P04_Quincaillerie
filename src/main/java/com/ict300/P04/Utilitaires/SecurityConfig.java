@@ -49,6 +49,7 @@ public class SecurityConfig {
                         .requestMatchers("/quincaillerie/promotion/allProductInPromotion").permitAll()
                         .requestMatchers("/quincaillerie/promotion/**").hasRole("VENDEUR")
                         .requestMatchers("/quincaillerie/panier/**").permitAll()
+                        .requestMatchers("/quincaillerie/ping").permitAll()
                         .requestMatchers("/v3/api-docs/**").permitAll()
                         .requestMatchers("/swagger-ui/**").permitAll()
                         .requestMatchers("/swagger-ui.html").permitAll()
