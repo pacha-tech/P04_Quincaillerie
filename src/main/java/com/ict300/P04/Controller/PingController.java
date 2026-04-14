@@ -8,6 +8,6 @@ public class PingController {
 
     @GetMapping("/quincaillerie/ping")
     public String ping() {
-        return "Pong! Le serveur est réveillé.";
+        return "Ne dors Pas !!!";
     }
 }
