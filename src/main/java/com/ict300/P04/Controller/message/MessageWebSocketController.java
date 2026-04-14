@@ -26,7 +26,6 @@ public class MessageWebSocketController {
 
     @MessageMapping("/chat")
     public void processMessageFromFlutter(@Payload IncomingMessageDTO incomingMessageDTO, Authentication authentication) {
-        log.info("CETTE FOIS CA DOIT S'AFFICHER ! Data: " + incomingMessageDTO);
         try {
             if (authentication == null || !authentication.isAuthenticated()) {
                 log.info("Pas Authentifier ");
@@ -36,24 +35,46 @@ public class MessageWebSocketController {
 
             String uid = authentication.getName();
 
-
-
             MessageDTO savedMessage = messageService.enregistrerMessage(incomingMessageDTO, uid);
 
+            System.out.println(savedMessage);
+            /*
             messagingTemplate.convertAndSendToUser(
                     savedMessage.getIdReceiver(),
                     "/prive/messages",
                     savedMessage
             );
-
+            log.info("📢 DIFFUSION DU MESSAGE SUR LE CANAL : /prive/messages" + savedMessage.getIdReceiver());
 
             messagingTemplate.convertAndSendToUser(
                     uid,
                     "/prive/messages",
                     savedMessage
             );
+            log.info("📢 DIFFUSION DU MESSAGE SUR LE CANAL : /prive/messgae" + uid);
 
 
+            messagingTemplate.convertAndSend(
+                    "/canal/conversation/" + savedMessage.getIdConversation(),
+                    savedMessage
+            );
+            log.info("📢 DIFFUSION DU MESSAGE SUR LE CANAL : /canal/conversation/" + savedMessage.getIdConversation());
+            */
+                /**/
+            messagingTemplate.convertAndSend(
+                    "/canal/notifications/" + savedMessage.getIdReceiver(),
+                    savedMessage
+            );
+            log.info("📢 NOTIFICATION ENVOYÉE SUR : /canal/notifications/" + savedMessage.getIdReceiver());
+
+            // On s'envoie la notification à nous-même (pour mettre à jour notre propre liste)
+            messagingTemplate.convertAndSend(
+                    "/canal/notifications/" + uid,
+                    savedMessage
+            );
+            log.info("📢 NOTIFICATION ENVOYÉE SUR : /canal/notifications/" + uid);
+
+            // La diffusion dans le chat (tu ne touches à rien ici)
             messagingTemplate.convertAndSend(
                     "/canal/conversation/" + savedMessage.getIdConversation(),
                     savedMessage

@@ -14,5 +14,4 @@ public interface ConversationInterface  extends JpaRepository<Conversation , Str
     //List<Conversation> findBySenderOrReceiverOrderByUpdatedAtDesc(User user);
     List<Conversation> findBySenderOrderByUpdatedAtDesc(User user);
     List<Conversation> findByReceiverOrderByUpdatedAtDesc(Quincaillerie quincaillerie);
-
 }

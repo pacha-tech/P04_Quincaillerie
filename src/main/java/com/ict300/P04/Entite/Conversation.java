@@ -37,7 +37,7 @@ public class Conversation {
     private LocalDateTime updatedAt;
 
     @CreationTimestamp
-    @Column(name = "created_at", updatable = false)
+    @Column(name = "created_at")
     private LocalDateTime createdAt;
 }
 

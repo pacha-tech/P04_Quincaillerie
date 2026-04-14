@@ -2,8 +2,6 @@ package com.ict300.P04.Controller.message;
 
 import com.ict300.P04.DTO.message.response.ConversationDTO;
 import com.ict300.P04.Exception.ApiError;
-import com.ict300.P04.Exception.ProductNotFoundException;
-import com.ict300.P04.Exception.UserNotFoundException;
 import com.ict300.P04.Service.message.ConversationService;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -48,13 +46,10 @@ public class ConversationController {
         try {
             List<ConversationDTO> response;
 
-            // LOGIQUE DISTINCTE SELON LE RÔLE
             if ("vendeur".equalsIgnoreCase(role)) {
-                // Pour le vendeur, on récupère l'ID de sa quincaillerie stocké dans les claims
                 String idQuincaillerie = (String) claims.get("quincaillerieId");
                 response = conversationService.getAllByQuincaillerie(idQuincaillerie);
             } else {
-                // Pour le client (rôle "client" ou autre), on utilise son UID
                 response = conversationService.getAllByClient(uid);
             }
 
@@ -65,4 +60,5 @@ public class ConversationController {
                     .body(new ApiError(HttpStatus.INTERNAL_SERVER_ERROR, "Erreur lors de la récupération"));
         }
     }
+
 }

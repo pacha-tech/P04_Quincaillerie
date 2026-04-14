@@ -11,5 +11,8 @@ public class ConversationDTO {
     private String idConversation;
     private String nameReceiver;
     private String lastMessage;
+    private String lastMessageSenderId;
+    private boolean lastMessageRead;
     private LocalDateTime updateAt;
+    private Long unreadCount;
 }

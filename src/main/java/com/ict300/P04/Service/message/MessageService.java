@@ -14,10 +14,15 @@ import com.ict300.P04.repository.interfaces.quincaillerie.QuincaillerieInterface
 import com.ict300.P04.repository.interfaces.user.customer.CustomerInterface;
 import com.ict300.P04.repository.interfaces.user.seller.SellerInterface;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.messaging.simp.SimpMessagingTemplate;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.time.LocalDateTime;
+import java.time.ZoneId;
+import java.util.Comparator;
 import java.util.List;
+import java.util.Objects;
 
 @Service
 public class MessageService {
@@ -34,6 +39,9 @@ public class MessageService {
     @Autowired
     private QuincaillerieInterface quincaillerieInterface;
 
+    @Autowired
+    private SimpMessagingTemplate messagingTemplate;
+
     @Transactional
     public MessageDTO enregistrerMessage(IncomingMessageDTO incomingMessageDTO , String idSender) {
         Conversation conversation;
@@ -49,6 +57,7 @@ public class MessageService {
             conversation.setIdConversation(GenerateID.GenerateConversationID());
             conversation.setSender(sender);
             conversation.setReceiver(receiver);
+            conversation.setCreatedAt(LocalDateTime.now());
 
             conversation = conversationInterface.saveAndFlush(conversation);
         } else {
@@ -63,6 +72,7 @@ public class MessageService {
         message.setContenu(incomingMessageDTO.getContenu());
         message.setConversation(conversation);
         message.setSender(sender);
+        message.setCreatedAt(LocalDateTime.now());
 
         Message message1 = messageInterface.saveAndFlush(message);
         conversation.setLastMessage(message);
@@ -78,6 +88,7 @@ public class MessageService {
         messageDTO.setEstLu(message1.getEstLu());
         messageDTO.setIdConversation(conversation.getIdConversation());
         messageDTO.setLuAt(message1.getLuAt());
+        messageDTO.setCreatedAt(message1.getCreatedAt());
 
         String realReceiverId = conversation.getSender().getIdUser().equals(idSender)
                 ? conversation.getReceiver().getIdQuincaillerie()
@@ -96,16 +107,58 @@ public class MessageService {
             return null;
         }
 
-        return conversation.getMessages().stream().map(message -> new MessageDTO(
-                message.getIdMessage(),
-                idConversation,
-                conversation.getSender().getIdUser(),
-                conversation.getReceiver().getIdQuincaillerie(),
-                conversation.getSender().getName(),
-                message.getContenu(),
-                message.getEstLu(),
-                message.getLuAt(),
-                message.getCreatedAt()
-        )).toList();
+        return conversation.getMessages().stream().sorted(Comparator.comparing(Message::getCreatedAt))
+                .map(message -> {
+
+                    // On vérifie si l'auteur du message est le client qui a créé la conversation
+                    boolean isClientTheAuthor = message.getSender().getIdUser().equals(conversation.getSender().getIdUser());
+
+                    // Si le client parle, le destinataire est la boutique. Sinon, le destinataire est le client.
+                    String realReceiverId = isClientTheAuthor
+                            ? conversation.getReceiver().getIdQuincaillerie()
+                            : conversation.getSender().getIdUser();
+
+                    return new MessageDTO(
+                            message.getIdMessage(),
+                            idConversation,
+                            message.getSender().getIdUser(),
+                            realReceiverId,
+                            message.getSender().getName(),
+                            message.getContenu(),
+                            message.getEstLu(),
+                            message.getLuAt(),
+                            message.getCreatedAt()
+                    );
+                }).toList();
+    }
+
+    @Transactional
+    public void readConfirmation(List<String> idMessages , String idReceiver) {
+        if (idMessages == null || idMessages.isEmpty()) {
+            return;
+        }
+
+        String idExpediteur = "";
+
+        try {
+            messageInterface.markAsRead(idMessages);
+
+            Message message = messageInterface.findByIdMessage(idMessages.get(0));
+
+            if(message != null ){
+                Conversation conversation = message.getConversation();
+                if(Objects.equals(conversation.getSender().getIdUser(), idReceiver)){
+                    idExpediteur = conversation.getReceiver().getIdQuincaillerie();
+                }else {
+                    idExpediteur = conversation.getSender().getIdUser();
+                }
+                messagingTemplate.convertAndSend("/canal/readReceipts/" + idExpediteur, message.getConversation().getIdConversation());
+            }
+
+        } catch (Exception e) {
+            System.err.println("❌ Erreur SQL lors de la confirmation de lecture : " + e.getMessage());
+
+            throw new RuntimeException("Échec de la mise à jour des messages", e);
+        }
     }
 }
