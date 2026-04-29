@@ -11,6 +11,7 @@ import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.Optional;
 
 @Repository
 public class PriceInterfaceImpl implements PriceCustomInterface {
@@ -75,7 +76,7 @@ public class PriceInterfaceImpl implements PriceCustomInterface {
     }
 
     @Override
-    public Price getPriceByProductAndQuincaillerie(String produitId, String quincaillerieId) {
+    public Optional<Price> getPriceByProductAndQuincaillerie(String produitId, String quincaillerieId) {
         String jpql = "SELECT p " +
                 "FROM Price p " +
                 "JOIN p.product pr " +
@@ -86,11 +87,11 @@ public class PriceInterfaceImpl implements PriceCustomInterface {
         return entityManager.createQuery(jpql , Price.class)
                 .setParameter("product" , produitId)
                 .setParameter("quincaillerie" , quincaillerieId)
-                .getSingleResult();
+                .getResultList().stream().findFirst();
     }
 
     @Override
-    public Price getByIdPrice(String idPrice) {
+    public Price findByIdPrice(String idPrice) {
         String jpql = "SELECT p " +
                 "FROM Price p " +
                 "WHERE p.idPrice = :id ";
@@ -101,7 +102,7 @@ public class PriceInterfaceImpl implements PriceCustomInterface {
     }
 
     @Override
-    public Price findByProductAndQuincaillerie(String idProduct, String idQuincaillerie) {
+    public Optional<Price> findByProductAndQuincaillerie(String idProduct, String idQuincaillerie) {
         String jpql = "SELECT p " +
                 "FROM Price p " +
                 "WHERE p.product.idProduct = :id1 " +
@@ -110,7 +111,7 @@ public class PriceInterfaceImpl implements PriceCustomInterface {
         return entityManager.createQuery(jpql , Price.class)
                 .setParameter("id1" , idProduct)
                 .setParameter("id2" , idQuincaillerie)
-                .getSingleResult();
+                .getResultList().stream().findFirst();
     }
 
     @Override

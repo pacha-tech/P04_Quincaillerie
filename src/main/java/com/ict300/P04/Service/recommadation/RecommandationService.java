@@ -35,10 +35,9 @@ public class RecommandationService {
         return similarResults.stream().map(result -> {
             Product p = (Product) result[0];
 
-            // LA CORRECTION : On cast en Number pour extraire la valeur en double sans erreur
             Double tauxRemise = (result[1] != null) ? ((Number) result[1]).doubleValue() : 0.0;
 
-            Price priceEntity = priceInterface.getPriceByProductAndQuincaillerie(p.getIdProduct(), idQuincaillerie);
+            Price priceEntity = priceInterface.getPriceByProductAndQuincaillerie(p.getIdProduct(), idQuincaillerie).orElse(null);
 
             BigDecimal originalPrice = (priceEntity != null) ? priceEntity.getPrice() : BigDecimal.ZERO;
             String priceId = (priceEntity != null) ? priceEntity.getIdPrice() : "N/A";

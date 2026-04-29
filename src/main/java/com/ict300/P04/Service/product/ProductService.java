@@ -90,6 +90,50 @@ public class ProductService {
         }).toList();
     }
 
+    public SearchProductDTO getProductById(String idPrice) {
+
+        priceInterface.findById(idPrice).orElseThrow(() -> new ProductNotFoundException("Le produit n'existe pas"));
+
+        Object[] res = productInterface.findProductById(idPrice);
+
+        Price price = (Price) res[0];
+        Product product = price.getProduct();
+
+        Double taux = (res[1] != null) ? ((Number) res[1]).doubleValue() : 0.0;
+        boolean inPromo = taux > 0;
+
+        Double pricePromo = inPromo ? price.getPrice().doubleValue() * (1 - (taux / 100)) : 0.0;
+
+        // 4. Création du PriceDTO unique
+        PriceSearchProductDTO priceDTO = new PriceSearchProductDTO(
+                price.getQuincaillerie().getStoreName(),
+                price.getQuincaillerie().getIdQuincaillerie(),
+                price.getPrice(),
+                price.getStock(),
+                price.getIdPrice(),
+                price.getQuincaillerie().getLatitude(),
+                price.getQuincaillerie().getLongitude(),
+                pricePromo,
+                inPromo,
+                taux.toString()
+        );
+
+        // 5. Encapsulation dans une liste (car SearchProductDTO attend List<PriceSearchProductDTO>)
+        List<PriceSearchProductDTO> pricesList = new ArrayList<>();
+        pricesList.add(priceDTO);
+
+        // 6. Retour du DTO global
+        return new SearchProductDTO(
+                product.getIdProduct(),
+                product.getCategory().getIdCategory(),
+                product.getName(),
+                product.getUnit(),
+                product.getImageUrl(),
+                pricesList,
+                product.getDescription()
+        );
+    }
+
     public List<getProductSuggestionDTO> getAllSuggestions() {
         return productInterface.findAll().stream()
                 .map(p -> new getProductSuggestionDTO(
@@ -100,7 +144,7 @@ public class ProductService {
     }
 
     public List<ProductStockDTO> getStock(String idQuincaillerie) {
-        Quincaillerie quin = quincaillerieInterface.getQuincaillerie(idQuincaillerie);
+        Quincaillerie quin = quincaillerieInterface.getQuincaillerie(idQuincaillerie).orElse(null);
         if (quin == null) throw new ResourceNotFoundException("La quincaillerie n'existe pas");
 
         List<ProductStockDTO> stockList = new ArrayList<>();
@@ -121,6 +165,10 @@ public class ProductService {
         if (priceInterface.ifAlreadyExistProductByQuincaillerie(dto.getName(), qId)) {
             throw new ProductExistException("Le produit existe déjà pour cette quincaillerie");
         }
+        Quincaillerie quincaillerie = quincaillerieInterface.getQuincaillerie(qId).orElse(null);
+        if(quincaillerie == null ){
+            throw new ProductNotFoundException("La quincaillerie n'existe pas");
+        }
         String imageUrl = "";
 
         if (image != null && !image.isEmpty()) {
@@ -140,7 +188,7 @@ public class ProductService {
         Price price = new Price();
         price.setIdPrice(GenerateID.GeneratePriceID());
         price.setProduct(product);
-        price.setQuincaillerie(quincaillerieInterface.getQuincaillerie(qId));
+        price.setQuincaillerie(quincaillerie);
         price.setUser(sellerInterface.getByIdUser(uid));
         price.setUpdateDate(LocalDateTime.now());
         price.setPrice(dto.getSellingPrice());
@@ -152,7 +200,7 @@ public class ProductService {
     @Transactional
     public void updateProduct(String idProduct, UpdateProductDTO dto, MultipartFile image, String qId) {
         Product product = productInterface.getProduct(idProduct);
-        Price price = priceInterface.findByProductAndQuincaillerie(idProduct, qId);
+        Price price = priceInterface.findByProductAndQuincaillerie(idProduct, qId).orElse(null);
 
         if (price == null) throw new ProductNotFoundException("Produit non trouvé pour cette quincaillerie");
 
@@ -185,7 +233,7 @@ public class ProductService {
 
     @Transactional
     public void deleteProduct(String idProduct, String qId) {
-        Price price = priceInterface.getPriceByProductAndQuincaillerie(idProduct, qId);
+        Price price = priceInterface.getPriceByProductAndQuincaillerie(idProduct, qId).orElse(null);
         if (price == null) throw new ProductNotFoundException("Ce Produit n'existe pas");
 
         Product product = productInterface.getProduct(idProduct);

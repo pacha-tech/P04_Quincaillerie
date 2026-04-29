@@ -6,6 +6,7 @@ import com.ict300.P04.DTO.quincaillerie.request.RegisterQuincaillerieDTO;
 import com.ict300.P04.DTO.quincaillerie.response.QuincaillerieDetailsDTO;
 import com.ict300.P04.Entite.Quincaillerie;
 import com.ict300.P04.Entite.User;
+import com.ict300.P04.Exception.ProductNotFoundException;
 import com.ict300.P04.Utilitaires.GenerateID;
 import com.ict300.P04.repository.interfaces.quincaillerie.QuincaillerieInterface;
 import com.ict300.P04.repository.interfaces.user.customer.CustomerInterface;
@@ -27,7 +28,11 @@ public class QuincaillerieService {
     public QuincaillerieDetailsDTO getInfoQuincaillerei(String idQuincaillerie){
 
         QuincaillerieDetailsDTO quincaillerieDetailsDTO = new QuincaillerieDetailsDTO();
-        Quincaillerie quincaillerie = quincaillerieInterface.getQuincaillerie(idQuincaillerie);
+        Quincaillerie quincaillerie = quincaillerieInterface.getQuincaillerie(idQuincaillerie).orElse(null);
+
+        if(quincaillerie == null){
+            throw new ProductNotFoundException("La quincaillerie n'existe pas");
+        }
 
         quincaillerieDetailsDTO.setName(quincaillerie.getStoreName());
         quincaillerieDetailsDTO.setRegion(quincaillerie.getRegion());

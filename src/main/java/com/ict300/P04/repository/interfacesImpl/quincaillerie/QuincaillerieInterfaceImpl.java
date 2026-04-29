@@ -8,6 +8,7 @@ import jakarta.persistence.PersistenceContext;
 import org.springframework.stereotype.Repository;
 
 import java.util.List;
+import java.util.Optional;
 
 @Repository
 public class QuincaillerieInterfaceImpl implements QuincaillerieCustomInterface {
@@ -24,13 +25,13 @@ public class QuincaillerieInterfaceImpl implements QuincaillerieCustomInterface 
     }
 
     @Override
-    public Quincaillerie getQuincaillerie(String idQuincaillerie) {
+    public Optional<Quincaillerie> getQuincaillerie(String idQuincaillerie) {
         String jpql = "SELECT q " +
                 "FROM Quincaillerie q " +
                 "WHERE q.idQuincaillerie = :id ";
 
         return entityManager.createQuery(jpql , Quincaillerie.class)
                 .setParameter("id" , idQuincaillerie)
-                .getSingleResult();
+                .getResultList().stream().findFirst();
     }
 }

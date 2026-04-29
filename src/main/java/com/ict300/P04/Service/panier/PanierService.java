@@ -40,7 +40,7 @@ public class PanierService {
             throw new UserNotFoundException("L'utilisateur n'existe pas");
         }
 
-        Price price = priceInterface.getByIdPrice(idPrice);
+        Price price = priceInterface.findByIdPrice(idPrice);
 
         if(price == null) {
             throw  new ProductNotFoundException("Le produit n'existe pas");
@@ -76,7 +76,7 @@ public class PanierService {
     }
 
     public int getQuantityProductInPanier(String idPrice , String idUser) {
-        Price price = priceInterface.getByIdPrice(idPrice);
+        Price price = priceInterface.findByIdPrice(idPrice);
 
         if(price == null) {
             throw new ProductNotFoundException("Le price n'existe pas");

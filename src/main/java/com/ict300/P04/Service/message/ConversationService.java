@@ -31,7 +31,7 @@ public class ConversationService {
     private QuincaillerieInterface quincaillerieInterface;
 
     public List<ConversationDTO> getAllByQuincaillerie(String idQuincaillerie) {
-        Quincaillerie quincaillerie = quincaillerieInterface.getQuincaillerie(idQuincaillerie);
+        Quincaillerie quincaillerie = quincaillerieInterface.getQuincaillerie(idQuincaillerie).orElse(null);
         if(quincaillerie == null ) throw new ResourceNotFoundException("Quincaillerie non existante");
 
         return conversationInterface.findByReceiverOrderByUpdatedAtDesc(quincaillerie).stream().map(conversation -> {

@@ -43,7 +43,7 @@ public class PromotionService {
     @Transactional
     public void addPromotion(AddPromotionDTO dto, String idQuincaillerie) {
 
-        Quincaillerie quincaillerie = quincaillerieInterface.getQuincaillerie(idQuincaillerie);
+        Quincaillerie quincaillerie = quincaillerieInterface.getQuincaillerie(idQuincaillerie).orElse(null);
 
         if (dto.getIdsPrices() == null || dto.getIdsPrices().isEmpty()) {
             throw new AppException("La liste des produits est vide");
@@ -57,7 +57,7 @@ public class PromotionService {
         for (String idPrice : dto.getIdsPrices()) {
 
 
-            Price price = priceInterface.getByIdPrice(idPrice);
+            Price price = priceInterface.findByIdPrice(idPrice);
             if (price == null) {
                 throw new AppException("Le produit " + idPrice + " n'existe pas");
             }
@@ -120,7 +120,7 @@ public class PromotionService {
 
 
     public List<ProduitPromotionDTO> getAllProduitOutPromotionByQuincaillerie(String idQuincaillerie) {
-        Quincaillerie quincaillerie = quincaillerieInterface.getQuincaillerie(idQuincaillerie);
+        Quincaillerie quincaillerie = quincaillerieInterface.getQuincaillerie(idQuincaillerie).orElse(null);
         if(quincaillerie == null ) {
             throw new ResourceNotFoundException("La Quincaillerie n'existe pas");
         }
@@ -205,7 +205,7 @@ public class PromotionService {
     }
 
     public List<PromotionDTO> getAllPromotionByQuincaillerie(String idQuincaillerie) {
-        Quincaillerie quincaillerie = quincaillerieInterface.getQuincaillerie(idQuincaillerie);
+        Quincaillerie quincaillerie = quincaillerieInterface.getQuincaillerie(idQuincaillerie).orElse(null);
         if (quincaillerie == null) {
             throw new ResourceNotFoundException("La Quincaillerie n'existe pas");
         }

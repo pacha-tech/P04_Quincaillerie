@@ -43,6 +43,14 @@ public class ProductController {
         return ResponseEntity.ok(results);
     }
 
+    @Operation(summary = "Recuperer un produit par son idPrice")
+    @GetMapping("/getProduct/{idPrice}")
+    public ResponseEntity<SearchProductDTO> getProductSearchById(@PathVariable("idPrice") String idPrice) {
+        log.info("Recuperation du produits avec l'id: {}", idPrice);
+        SearchProductDTO results = productService.getProductById(idPrice);
+        return ResponseEntity.ok(results);
+    }
+
     @Operation(summary = "Récupérer le stock complet de la quincaillerie")
     @GetMapping("/getStock")
     public ResponseEntity<?> getProductByQuincaillerie(Authentication authentication) {

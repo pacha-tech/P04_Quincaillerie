@@ -118,4 +118,20 @@ public class ProductInterfaceImpl implements ProductCustomInterface {
                 .setParameter("now" , LocalDate.now())
                 .getResultList();
     }
+
+    @Override
+    public Object[] findProductById(String idProduct) {
+        String jpql = "SELECT pr , p.campagnePromotion.tauxRemise " +
+                "FROM Price pr " +
+                "LEFT JOIN Promotion p ON pr.product = p.price.product " +
+                "AND p.campagnePromotion.estActif = true " +
+                "AND p.campagnePromotion.dateDebut <= :now " +
+                "AND p.campagnePromotion.dateFin >= :now " +
+                "WHERE pr.idPrice = :id ";
+
+        return entityManager.createQuery(jpql , Object[].class)
+                .setParameter("id" , idProduct)
+                .setParameter("now" , LocalDate.now())
+                .getSingleResult();
+    }
 }

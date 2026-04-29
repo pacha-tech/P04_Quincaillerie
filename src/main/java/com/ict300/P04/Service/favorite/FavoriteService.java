@@ -5,6 +5,7 @@ import com.ict300.P04.DTO.favorite.request.AddFavoriteQuincaillerieDTO;
 import com.ict300.P04.DTO.favorite.request.DeleteFavoriteProductDTO;
 import com.ict300.P04.DTO.favorite.request.DeleteFavoriteQuincaillerieDTO;
 import com.ict300.P04.Entite.*;
+import com.ict300.P04.Exception.ProductNotFoundException;
 import com.ict300.P04.Utilitaires.GenerateID;
 import com.ict300.P04.repository.interfaces.favoriteProduct.FavoriteProductInterface;
 import com.ict300.P04.repository.interfaces.favoriteQuincaillerie.FavoriteQuincaillerieInterface;
@@ -41,7 +42,11 @@ public class FavoriteService {
         }
 
         User user = userInterface.getByIdUser(addFavoriteQuincaillerieDTO.getIdUser());
-        Quincaillerie quincaillerie = quincaillerieInterface.getQuincaillerie(addFavoriteQuincaillerieDTO.getIdQuincaillerie());
+        Quincaillerie quincaillerie = quincaillerieInterface.getQuincaillerie(addFavoriteQuincaillerieDTO.getIdQuincaillerie()).orElse(null);
+
+        if(quincaillerie == null){
+            throw new ProductNotFoundException("La quincaillerie n'existe pas");
+        }
 
         FavoriteQuincaillerie favoriteQuincaillerie = new FavoriteQuincaillerie();
 
