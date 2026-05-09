@@ -6,6 +6,7 @@ import com.ict300.P04.DTO.favorite.request.DeleteFavoriteProductDTO;
 import com.ict300.P04.DTO.favorite.request.DeleteFavoriteQuincaillerieDTO;
 import com.ict300.P04.Entite.*;
 import com.ict300.P04.Exception.ProductNotFoundException;
+import com.ict300.P04.Exception.UserNotFoundException;
 import com.ict300.P04.Utilitaires.GenerateID;
 import com.ict300.P04.repository.interfaces.favoriteProduct.FavoriteProductInterface;
 import com.ict300.P04.repository.interfaces.favoriteQuincaillerie.FavoriteQuincaillerieInterface;
@@ -41,11 +42,15 @@ public class FavoriteService {
             throw new RuntimeException("Quincaillerie deja en favoris");
         }
 
-        User user = userInterface.getByIdUser(addFavoriteQuincaillerieDTO.getIdUser());
+        User user = userInterface.getByIdUser(addFavoriteQuincaillerieDTO.getIdUser()).orElse(null);
         Quincaillerie quincaillerie = quincaillerieInterface.getQuincaillerie(addFavoriteQuincaillerieDTO.getIdQuincaillerie()).orElse(null);
 
         if(quincaillerie == null){
             throw new ProductNotFoundException("La quincaillerie n'existe pas");
+        }
+
+        if(user == null){
+            throw new UserNotFoundException("L'utilisateur n'existe pas");
         }
 
         FavoriteQuincaillerie favoriteQuincaillerie = new FavoriteQuincaillerie();
@@ -74,7 +79,7 @@ public class FavoriteService {
             throw new RuntimeException("Produit deja en favoris");
         }
 
-        User user = userInterface.getByIdUser(addFavoriteProductDTO.getIdUser());
+        User user = userInterface.getByIdUser(addFavoriteProductDTO.getIdUser()).orElse(null);
         Product product = productInterface.getProduct(addFavoriteProductDTO.getIdProduct());
 
         FavoriteProduct favoriteProduct = new FavoriteProduct();

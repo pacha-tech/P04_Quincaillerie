@@ -3,6 +3,7 @@ package com.ict300.P04.Entite;
 import com.google.type.Decimal;
 import jakarta.persistence.*;
 import lombok.Data;
+import lombok.EqualsAndHashCode;
 
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
@@ -19,6 +20,7 @@ public class Quincaillerie {
 
     @OneToOne
     @JoinColumn(name = "id_user")
+    @EqualsAndHashCode.Exclude
     private User admin;
 
     @Column(name = "Store_name")
@@ -33,7 +35,7 @@ public class Quincaillerie {
     @Column(name = "Phone")
     private String phone;
 
-    @Column(name = "Region" , length = 15)
+    @Column(name = "Region" , length = 25)
     private String region;
 
     @Column(name = "Description")
@@ -85,11 +87,12 @@ public class Quincaillerie {
     private List<FavoriteQuincaillerie> favoriteQuincailleries = new ArrayList<>();
 
     @OneToMany(mappedBy = "quincaillerie")
-    private List<Facture> factures = new ArrayList<>();
-
-    @OneToMany(mappedBy = "quincaillerie")
     private List<CampagnePromotion> campagnePromotions = new ArrayList<>();
 
     @OneToMany(mappedBy = "receiver")
     private List<Conversation> conversations = new ArrayList<>();
+
+    @OneToMany(mappedBy = "quincaillerie")
+    @EqualsAndHashCode.Exclude
+    private List<Commande> commandes = new ArrayList<>();
 }

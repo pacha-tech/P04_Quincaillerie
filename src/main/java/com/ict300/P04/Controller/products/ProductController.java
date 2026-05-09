@@ -56,12 +56,8 @@ public class ProductController {
     public ResponseEntity<?> getProductByQuincaillerie(Authentication authentication) {
         String qId = getQuincaillerieId(authentication);
         if (qId == null) return buildUnauthorizedResponse();
-        try{
-            List<ProductStockDTO> stock = productService.getStock(qId);
-            return ResponseEntity.ok(stock);
-        } catch (ResourceNotFoundException e) {
-            throw e;
-        }
+        List<ProductStockDTO> stock = productService.getStock(qId);
+        return ResponseEntity.ok(stock);
 
     }
 
@@ -81,8 +77,7 @@ public class ProductController {
 
     @Operation(summary = "Ajouter un nouveau produit avec image")
     @PostMapping(value = "/addProduct", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
-    public ResponseEntity<?> addProduct(@RequestPart("data") @Valid AddProductDTO addProductDTO, @RequestPart(value = "image", required = false) MultipartFile image,
-            Authentication authentication) {
+    public ResponseEntity<?> addProduct(@RequestPart("data") @Valid AddProductDTO addProductDTO, @RequestPart(value = "image", required = false) MultipartFile image, Authentication authentication) {
 
         String qId = getQuincaillerieId(authentication);
         if (qId == null) return buildUnauthorizedResponse();

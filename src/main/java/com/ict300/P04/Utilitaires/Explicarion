@@ -1,0 +1,14 @@
+
+OrderNotPaidException : Le client te demande ses tôles, mais dans le système, il n'a pas encore payé. Action : Refusé.
+
+OrderAlreadyFulfilledException : Le client te demande ses tôles, mais ton système dit qu'il est déjà venu les chercher hier ! Action : Refusé (Tentative de vol).
+
+StoreMismatchException : Le client vient à ta quincaillerie à Douala, mais sa commande était prévue pour la succursale de Yaoundé. Action : Refusé.
+
+OtpCodeNotFoundException : Le client dit "Je viens chercher ma commande", mais il n'a pas appuyé sur "Générer le code" sur son téléphone. Action : Refusé.
+
+OtpCodeExpiredException : Le client a généré son code, mais il a passé 15 minutes à discuter au téléphone avant de te le dicter. Le code est mort. Action : Refusé.
+
+InvalidOtpCodeException : Le client te dicte "123456", tu tapes "123457". Le code est faux, mais tu as encore 2 essais. Action : Refusé.
+
+MaxAttemptsExceededException : Tu as tapé un faux code 3 fois de suite. Le système bloque tout par sécurité. Action : Refusé, le client doit recommencer.

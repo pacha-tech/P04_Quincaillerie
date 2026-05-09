@@ -2,6 +2,8 @@ package com.ict300.P04.Utilitaires;
 
 import org.springframework.stereotype.Component;
 import java.security.SecureRandom;
+import java.time.LocalDate;
+import java.time.format.DateTimeFormatter;
 
 
 @Component
@@ -108,6 +110,66 @@ public class GenerateID {
 
     public static String GenerateConversationID() {
         StringBuilder sb = new StringBuilder("CONV");
+        for (int i = 0; i < 6; i++) {
+            sb.append(ALPHABET.charAt(RANDOM.nextInt(ALPHABET.length())));
+        }
+        return sb.toString();
+    }
+
+    public static String GenerateLignePanierID() {
+        StringBuilder sb = new StringBuilder("LIPA");
+        for (int i = 0; i < 6; i++) {
+            sb.append(ALPHABET.charAt(RANDOM.nextInt(ALPHABET.length())));
+        }
+        return sb.toString();
+    }
+
+    public static String GenerateLigneCommandeID() {
+        StringBuilder sb = new StringBuilder("LICO");
+        for (int i = 0; i < 6; i++) {
+            sb.append(ALPHABET.charAt(RANDOM.nextInt(ALPHABET.length())));
+        }
+        return sb.toString();
+    }
+
+    public static String GenerateDetailCommandeID() {
+        StringBuilder sb = new StringBuilder("DECO");
+        for (int i = 0; i < 6; i++) {
+            sb.append(ALPHABET.charAt(RANDOM.nextInt(ALPHABET.length())));
+        }
+        return sb.toString();
+    }
+
+    public static String GenerateRetraitCodeID() {
+        StringBuilder sb = new StringBuilder("RECO");
+        for (int i = 0; i < 6; i++) {
+            sb.append(ALPHABET.charAt(RANDOM.nextInt(ALPHABET.length())));
+        }
+        return sb.toString();
+    }
+
+    public static String GenerateDetailRetraitID() {
+        StringBuilder sb = new StringBuilder("DERE");
+        for (int i = 0; i < 6; i++) {
+            sb.append(ALPHABET.charAt(RANDOM.nextInt(ALPHABET.length())));
+        }
+        return sb.toString();
+    }
+
+    public static String GenerateCommandeID() {
+        String dateDuJour = LocalDate.now().format(DateTimeFormatter.ofPattern("yyyyMMdd"));
+        StringBuilder sb = new StringBuilder("CMD-");
+        sb.append(dateDuJour).append("-");
+        for (int i = 0; i < 6; i++) {
+            sb.append(ALPHABET.charAt(RANDOM.nextInt(ALPHABET.length())));
+        }
+        return sb.toString();
+    }
+
+    public static String GenerateFactureID() {
+        String dateDuJour = LocalDate.now().format(DateTimeFormatter.ofPattern("yyyyMMdd"));
+        StringBuilder sb = new StringBuilder("FAC-");
+        sb.append(dateDuJour).append("-");
         for (int i = 0; i < 6; i++) {
             sb.append(ALPHABET.charAt(RANDOM.nextInt(ALPHABET.length())));
         }

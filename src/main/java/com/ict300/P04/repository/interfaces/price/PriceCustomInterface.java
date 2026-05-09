@@ -13,7 +13,7 @@ public interface PriceCustomInterface {
     List<Price> searchAdvanced(String query, String city, String category, BigDecimal maxPrice);
     boolean ifAlreadyExistProductByQuincaillerie(String name , String quincaillerieId);
     Optional<Price> getPriceByProductAndQuincaillerie(String produitId , String quincaillerieId);
-    Price findByIdPrice(String idPrice);
+    Optional<Price> findByIdPrice(String idPrice);
     Optional<Price> findByProductAndQuincaillerie(String idProduct , String idQuincaillerie);
     List<Price> findByQuincaillerie(String idQuincaillerie);
     List<Price> findPricesWithoutActivePromotion(String idQuincaillerie);

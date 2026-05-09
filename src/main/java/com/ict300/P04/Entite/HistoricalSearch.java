@@ -7,7 +7,7 @@ import java.time.LocalDateTime;
 
 @Entity
 @Data
-@Table(name = "Historical_search")
+@Table(name = "HistoricalSearch")
 public class HistoricalSearch {
     @Id
     @Column(name = "id_search" , length = 10)

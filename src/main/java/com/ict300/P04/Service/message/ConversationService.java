@@ -51,7 +51,7 @@ public class ConversationService {
     }
 
     public List<ConversationDTO> getAllByClient(String idUser) {
-        User user = customerInterface.getByIdUser(idUser);
+        User user = customerInterface.getByIdUser(idUser).orElse(null);
         if(user == null ) throw new UserNotFoundException("Utilisateur non existant");
 
         return conversationInterface.findBySenderOrderByUpdatedAtDesc(user).stream().map(conversation -> {

@@ -57,7 +57,7 @@ public class PromotionService {
         for (String idPrice : dto.getIdsPrices()) {
 
 
-            Price price = priceInterface.findByIdPrice(idPrice);
+            Price price = priceInterface.findByIdPrice(idPrice).orElse(null);
             if (price == null) {
                 throw new AppException("Le produit " + idPrice + " n'existe pas");
             }

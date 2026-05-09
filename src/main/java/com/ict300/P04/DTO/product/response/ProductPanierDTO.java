@@ -19,4 +19,5 @@ public class ProductPanierDTO {
     private BigDecimal price;
     private int quantity;
     private String imageUrl;
+    private int stock;
 }

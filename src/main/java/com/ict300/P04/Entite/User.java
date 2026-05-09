@@ -2,6 +2,7 @@ package com.ict300.P04.Entite;
 
 import jakarta.persistence.*;
 import lombok.Data;
+import lombok.EqualsAndHashCode;
 
 import java.time.LocalDateTime;
 import java.util.ArrayList;
@@ -47,6 +48,7 @@ public class User {
     private UserStatus statut_online = UserStatus.OFF_LINE;
 
     @OneToOne(mappedBy = "admin")
+    @EqualsAndHashCode.Exclude
     private Quincaillerie quincaillerie;
 
     @OneToMany(mappedBy = "user")
@@ -68,9 +70,6 @@ public class User {
     private List<Report> reports = new ArrayList<>();
 
     @OneToMany(mappedBy = "user")
-    private List<Facture> factures = new ArrayList<>();
-
-    @OneToMany(mappedBy = "user")
     private List<Panier> paniers = new ArrayList<>();
 
     @OneToMany(mappedBy = "sender")
@@ -81,6 +80,9 @@ public class User {
 
     @OneToMany(mappedBy = "recipient")
     private List<Notification> notifications = new ArrayList<>();
+
+    @OneToMany(mappedBy = "user")
+    private List<Commande> commandes = new ArrayList<>();
 
     public enum UserStatus {
         ON_LINE,

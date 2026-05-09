@@ -10,6 +10,7 @@ import com.ict300.P04.Entite.*;
 import com.ict300.P04.Exception.ProductExistException;
 import com.ict300.P04.Exception.ProductNotFoundException;
 import com.ict300.P04.Exception.ResourceNotFoundException;
+import com.ict300.P04.Service.cloudinary.UploadImage;
 import com.ict300.P04.Service.cloudinary.CloudinaryService;
 import com.ict300.P04.Utilitaires.GenerateID;
 import com.ict300.P04.repository.interfaces.category.CategoryInterface;
@@ -22,13 +23,12 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
-
-import java.io.IOException;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+
 
 @Slf4j
 @Service
@@ -41,6 +41,7 @@ public class ProductService {
     private final SellerInterface sellerInterface;
     private final PriceInterface priceInterface;
     private final CloudinaryService cloudinaryService;
+    private  final UploadImage uploadImage;
 
 
 
@@ -172,7 +173,7 @@ public class ProductService {
         String imageUrl = "";
 
         if (image != null && !image.isEmpty()) {
-            imageUrl = uploadImageSafely(image);
+            imageUrl = uploadImage.uploadImageSafely(image);
         }
 
         Product product = new Product();
@@ -210,7 +211,7 @@ public class ProductService {
                 cloudinaryService.deleteImage(product.getImageUrl());
             }
 
-            String newUrl = uploadImageSafely(image);
+            String newUrl = uploadImage.uploadImageSafely(image);
             if (newUrl != null){
                 product.setImageUrl(newUrl);
             }
@@ -250,6 +251,7 @@ public class ProductService {
     }
 
 
+    /*
     private String uploadImageSafely(MultipartFile image) {
         if (image == null || image.isEmpty()) return null;
         try {
@@ -259,6 +261,7 @@ public class ProductService {
             return null;
         }
     }
+    */
 
     private ProductStockDTO mapToStockDTO(Price entity, Object tauxObj) {
         ProductStockDTO dto = new ProductStockDTO();

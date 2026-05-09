@@ -4,10 +4,12 @@ import jakarta.persistence.*;
 import lombok.Data;
 
 import java.time.LocalDateTime;
+import java.util.ArrayList;
+import java.util.List;
 
 @Entity
 @Data
-@Table(name = "Panier" , uniqueConstraints = {@UniqueConstraint(columnNames = {"id_user", "id_price"})})
+@Table(name = "Panier")
 public class Panier {
     @Id
     @Column(name = "id_panier" , length = 10)
@@ -17,13 +19,17 @@ public class Panier {
     @JoinColumn(name = "id_user")
     private User user;
 
-    @ManyToOne
-    @JoinColumn(name = "id_price")
-    private Price price;
+    @Column(name = "Creation_date")
+    private  LocalDateTime creationDate;
 
-    @Column(name = "Quantity")
-    private int quantity;
+    @Column(name = "Update_date")
+    private  LocalDateTime updateDate;
 
-    @Column(name = "Date_added")
-    private LocalDateTime dateAdded;
+    @OneToMany(mappedBy = "panier")
+    List<LignePanier> lignePaniers = new ArrayList<>();
+
+    public void removeLignePanier(LignePanier ligne) {
+        this.lignePaniers.remove(ligne);
+        ligne.setPanier(null);
+    }
 }

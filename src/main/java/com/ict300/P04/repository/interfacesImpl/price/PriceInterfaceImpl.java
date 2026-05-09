@@ -91,14 +91,14 @@ public class PriceInterfaceImpl implements PriceCustomInterface {
     }
 
     @Override
-    public Price findByIdPrice(String idPrice) {
+    public Optional<Price> findByIdPrice(String idPrice) {
         String jpql = "SELECT p " +
                 "FROM Price p " +
                 "WHERE p.idPrice = :id ";
 
         return entityManager.createQuery(jpql , Price.class)
                 .setParameter("id" , idPrice)
-                .getSingleResult();
+                .getResultList().stream().findFirst();
     }
 
     @Override

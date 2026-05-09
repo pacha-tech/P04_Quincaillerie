@@ -55,6 +55,11 @@ public class SecurityConfig {
                         .requestMatchers("/quincaillerie/promotion/allProductInPromotion").permitAll()
                         .requestMatchers("/quincaillerie/promotion/**").hasRole("VENDEUR")
                         .requestMatchers("/quincaillerie/panier/**").permitAll()
+                        .requestMatchers("/quincaillerie/localisation").permitAll()
+                        .requestMatchers("/quincaillerie/paiement/**").authenticated()
+                        .requestMatchers("/quincaillerie/otp/valider").hasRole("VENDEUR")
+                        .requestMatchers("/quincaillerie/otp/getOtp/**").hasRole("CLIENT")
+                        .requestMatchers("/quincaillerie/commande/**").authenticated()
                         .requestMatchers("/quincaillerie/ping").permitAll()
                         .requestMatchers("/v3/api-docs/**").permitAll()
                         .requestMatchers("/swagger-ui/**").permitAll()
@@ -89,6 +94,7 @@ public class SecurityConfig {
         // L'astuce magique : On autorise N'IMPORTE QUEL port localhost pour Flutter !
         configuration.setAllowedOriginPatterns(Arrays.asList(
                 "http://localhost:*",
+                "http://192.168.0.106:3000/*",
                 "https://brixel-web.onrender.com"
                 ));
 

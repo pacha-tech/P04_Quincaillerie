@@ -53,7 +53,7 @@ public class QuincaillerieService {
     public Quincaillerie registerQuincaillerie(RegisterQuincaillerieDTO registerQuincaillerieDTO , String idUser){
 
         Quincaillerie newQuincaillerie = new Quincaillerie();
-        User admin = userInterface.getByIdUser(idUser);
+        User admin = userInterface.getByIdUser(idUser).orElse(null);
 
 
         newQuincaillerie.setIdQuincaillerie(GenerateID.GenerateQuincaillerieID());

@@ -1,14 +1,11 @@
 package com.ict300.P04.Exception;
 
+import lombok.AllArgsConstructor;
 import lombok.Data;
+import lombok.NoArgsConstructor;
 
-@Data
+@Data  @AllArgsConstructor @NoArgsConstructor
 public class ApiResponse {
     private boolean succes;
     private String message;
-
-    public ApiResponse(boolean succes , String message) {
-        this.succes = succes;
-        this.message = message;
-    }
 }

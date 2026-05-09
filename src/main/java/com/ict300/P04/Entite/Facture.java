@@ -13,19 +13,11 @@ import java.util.List;
 @Table(name = "Facture")
 public class Facture {
     @Id
-    @Column(name = "id_facture" , length = 10)
+    @Column(name = "id_facture" , length = 20)
     private String idFacture;
 
-    @ManyToOne
-    @JoinColumn(name = "id_quincaillerie")
-    private Quincaillerie quincaillerie;
-
-    @ManyToOne
-    @JoinColumn(name = "id_user")
-    private User user;
-
-    @Column(name = "Date_facture")
-    private LocalDateTime dateFacture;
+    @Column(name = "Date_facturation")
+    private LocalDateTime dateFacturation;
 
     @Column(precision = 12 , scale = 2 , name = "Total_HT")
     private BigDecimal totalHT;
@@ -36,6 +28,13 @@ public class Facture {
     @Column(precision = 12 , scale = 2 , name = "Total_TTC")
     private BigDecimal totalTTC;
 
-    @OneToMany(mappedBy = "facture")
-    private List<Vente> ventes = new ArrayList<>();
+    @Column(name = "Mode_paiement" , length = 100)
+    private String modePaiement;
+
+    @Column(name = "Url_facture" , length = 500)
+    private String urlFacture;
+
+    @OneToOne
+    @JoinColumn(name = "id_commande")
+    private Commande commande;
 }

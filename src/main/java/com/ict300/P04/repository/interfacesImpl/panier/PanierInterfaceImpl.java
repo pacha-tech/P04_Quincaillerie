@@ -10,6 +10,7 @@ import org.springframework.stereotype.Repository;
 
 import java.time.LocalDate;
 import java.util.List;
+import java.util.Optional;
 
 @Repository
 public class PanierInterfaceImpl implements PanierCustomInterface {
@@ -36,18 +37,6 @@ public class PanierInterfaceImpl implements PanierCustomInterface {
         } catch (NoResultException e) {
             return 0;
         }
-    }
-
-    @Override
-    public void deleteProductInPanier(String idPrice , String idUser) {
-        String jpql = "DELETE " +
-                "FROM Panier p " +
-                "WHERE p.price.idPrice = :id1 AND p.user.idUser = :id2 ";
-
-        entityManager.createQuery(jpql)
-                .setParameter("id1" , idPrice)
-                .setParameter("id2" , idUser)
-                .executeUpdate();
     }
 
     @Override
@@ -89,6 +78,17 @@ public class PanierInterfaceImpl implements PanierCustomInterface {
                 .setParameter("id1" , idUser)
                 .setParameter("id2" , idPrice)
                 .getSingleResult();
+    }
+
+    @Override
+    public Optional<Panier> findPanierByUser(String idUser) {
+        String jpql = "SELECT p " +
+                "FROM Panier p " +
+                "WHERE p.user.idUser = :id ";
+
+        return entityManager.createQuery(jpql , Panier.class)
+                .setParameter("id" , idUser)
+                .getResultList().stream().findFirst();
     }
 
 

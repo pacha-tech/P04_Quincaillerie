@@ -34,6 +34,10 @@ public class CloudinaryService {
         return uploadToFolder(file, "photos");
     }
 
+    public String uploadFacturePdf(byte[] pdfBytes, String fileName) throws IOException {
+        return uploadFactureToFolder(pdfBytes, "factures", fileName);
+    }
+
 
     private String uploadToFolder(MultipartFile file, String folder) throws IOException {
         if (file == null || file.isEmpty()) {
@@ -54,6 +58,29 @@ public class CloudinaryService {
         } catch (IOException e) {
             log.error("Erreur Cloudinary dans le dossier {}: {}", folder, e.getMessage());
             throw new IOException("Erreur lors du téléchargement vers Cloudinary : " + e.getMessage());
+        }
+    }
+
+    private String uploadFactureToFolder(byte[] data, String folder, String fileName) throws IOException {
+        if (data == null || data.length == 0) {
+            return null;
+        }
+
+        try {
+            log.info("Téléchargement du PDF vers Cloudinary (Dossier: {})...", folder);
+            Map<?, ?> uploadResult = cloudinary.uploader().upload(data,
+                    ObjectUtils.asMap(
+                            "folder", folder,
+                            "public_id", fileName,
+                            "resource_type", "raw" // CRUCIAL : "raw" pour les fichiers PDF/Non-image
+                    ));
+
+            String url = uploadResult.get("secure_url").toString();
+            log.info("PDF téléchargé avec succès: {}", url);
+            return url;
+        } catch (IOException e) {
+            log.error("Erreur Cloudinary lors de l'upload du PDF {}: {}", fileName, e.getMessage());
+            throw new IOException("Erreur lors de l'upload du PDF : " + e.getMessage());
         }
     }
 

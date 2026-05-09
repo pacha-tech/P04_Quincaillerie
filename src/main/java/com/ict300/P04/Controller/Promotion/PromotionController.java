@@ -55,6 +55,7 @@ public class PromotionController {
         log.info("Ajout de la promo par UID: {} pour quincaillerie: {} sur les produits {} ", uid, quincaillerieId , addPromotionDTO.getIdsPrices());
 
         try {
+            System.out.println("La promo est: "+addPromotionDTO);
             promotionService.addPromotion(addPromotionDTO , quincaillerieId);
             return ResponseEntity.ok(new ApiResponse(true, "Promotion ajouté avec succès"));
         } catch (ProductExistException e) {

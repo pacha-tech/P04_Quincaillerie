@@ -1,6 +1,8 @@
 package com.ict300.P04.Controller.user.custommer;
 
+import com.ict300.P04.DTO.product.request.AddProductDTO;
 import com.ict300.P04.DTO.user.customer.request.RegisterCustomerDTO;
+import com.ict300.P04.DTO.user.customer.response.AuthResponseDTO;
 import com.ict300.P04.Service.user.customer.AuthCustomerService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
@@ -8,6 +10,7 @@ import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
 
 
 @RestController
@@ -19,20 +22,10 @@ public class AuthCustomerController {
 
     @PostMapping("/registerCustomer")
     @Operation(summary = "Inscription d'un client")
-    public ResponseEntity<?> registerUSer(@Valid @RequestBody RegisterCustomerDTO request) throws Exception {
-        authCustomerService.register(request);
-        return ResponseEntity.ok("Incription Reussis du client " + request.getName());
-    }
+    public ResponseEntity<?> registerUSer(@RequestPart("data") @Valid RegisterCustomerDTO request , @RequestPart(value = "photo" , required = false) MultipartFile photo ) throws Exception {
 
-    /*
-    @PostMapping("/login")
-    @Operation(summary = "Connexion", description = "Connexion avec le username et le password")
-    public ResponseEntity<String> login(@Valid @RequestBody LoginUserDTO loginUserDTO){
-        boolean isValid = authUserService.login(loginUserDTO);
-        if(isValid){
-            return ResponseEntity.ok("Content de vous revoir Mr/Mme "+loginUserDTO.getUsername());
-        }
-        return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Identifiants incorrects");
+        Object[] result = authCustomerService.register(request , photo);
+        AuthResponseDTO response = (AuthResponseDTO) result[1];
+        return ResponseEntity.ok(response);
     }
-     */
 }

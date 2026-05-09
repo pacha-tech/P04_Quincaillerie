@@ -1,4 +1,5 @@
 package com.ict300.P04.Controller.user.seller;
+import com.ict300.P04.DTO.user.customer.response.AuthResponseDTO;
 import com.ict300.P04.DTO.user.seller.request.RegisterSellerDTO;
 import com.ict300.P04.Service.user.seller.AuthSellerService;
 import io.swagger.v3.oas.annotations.Operation;
@@ -20,11 +21,12 @@ public class AuthSellerController {
 
     @PostMapping("/registerSeller")
     @Operation(summary = "Inscription vendeur")
-    public ResponseEntity<?> registerUSer(@Valid @RequestBody RegisterSellerDTO registerSellerDTO) throws Exception {
-        System.out.println("VENDEUR1: "+registerSellerDTO.getUser());
-        System.out.println("VENDEUR1: "+registerSellerDTO.getQuincaillerie());
+    public ResponseEntity<AuthResponseDTO> registerUSer(@Valid @RequestBody RegisterSellerDTO registerSellerDTO) throws Exception {
+        System.out.println("vendeur: "+registerSellerDTO.getUser());
+        System.out.println("quincaillerie: "+registerSellerDTO.getQuincaillerie());
 
-        authSellerService.registerSeller(registerSellerDTO);
-        return ResponseEntity.ok("Incription Reussis du vendeur");
+        Object[] result = authSellerService.registerSeller(registerSellerDTO);
+        AuthResponseDTO response = (AuthResponseDTO) result[2];
+        return ResponseEntity.ok(response);
     }
 }

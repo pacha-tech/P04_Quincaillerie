@@ -1,13 +1,16 @@
 package com.ict300.P04.Service.panier;
 
 import com.ict300.P04.DTO.product.response.ProductPanierDTO;
+import com.ict300.P04.Entite.LignePanier;
 import com.ict300.P04.Entite.Panier;
 import com.ict300.P04.Entite.Price;
 import com.ict300.P04.Entite.User;
 import com.ict300.P04.Exception.ProductExistException;
 import com.ict300.P04.Exception.ProductNotFoundException;
+import com.ict300.P04.Exception.ResourceNotFoundException;
 import com.ict300.P04.Exception.UserNotFoundException;
 import com.ict300.P04.Utilitaires.GenerateID;
+import com.ict300.P04.repository.interfaces.lignePanier.LignePanierInterface;
 import com.ict300.P04.repository.interfaces.panier.PanierInterface;
 import com.ict300.P04.repository.interfaces.price.PriceInterface;
 import com.ict300.P04.repository.interfaces.user.customer.CustomerInterface;
@@ -31,89 +34,92 @@ public class PanierService {
     @Autowired
     private PriceInterface priceInterface;
 
+    @Autowired
+    private LignePanierInterface lignePanierInterface;
+
 
     @Transactional
-    public void addToPanier(String idPrice , String idUser){
-        User user = customerInterface.getByIdUser(idUser);
+    public void addToPanier(String idPrice, String idUser) {
 
-        if(user == null){
-            throw new UserNotFoundException("L'utilisateur n'existe pas");
+        User user = customerInterface.getByIdUser(idUser)
+                .orElseThrow(() -> new UserNotFoundException("L'utilisateur n'existe pas"));
+
+        Price price = priceInterface.findByIdPrice(idPrice)
+                .orElseThrow(() -> new ProductNotFoundException("Le produit n'existe pas"));
+
+        Panier panier = panierInterface.findPanierByUser(idUser).orElse(null);
+
+        if (panier == null) {
+            panier = new Panier();
+            panier.setIdPanier(GenerateID.GeneratePanierID());
+            panier.setUser(user);
+            panier.setCreationDate(LocalDateTime.now());
+            panier.setUpdateDate(LocalDateTime.now());
+            panier = panierInterface.save(panier);
         }
 
-        Price price = priceInterface.findByIdPrice(idPrice);
+        if(price.getStock() > 0 ){
+            LignePanier nouvelleLigne = new LignePanier();
+            nouvelleLigne.setIdLignePanier(GenerateID.GenerateLignePanierID());
+            nouvelleLigne.setPanier(panier);
+            nouvelleLigne.setPrice(price);
+            nouvelleLigne.setQuantity(1);
 
-        if(price == null) {
-            throw  new ProductNotFoundException("Le produit n'existe pas");
+            panier.setUpdateDate(LocalDateTime.now());
+            panierInterface.save(panier);
+            lignePanierInterface.save(nouvelleLigne);
+        }else {
+            throw new ProductNotFoundException("Le stock de produit est finis");
         }
-
-        int qte = panierInterface.ifAlreadyExistProdctInPanier(idPrice , idUser );
-
-        if(qte != 0 ){
-            throw new ProductExistException("Produit deja dans le panier");
-        }
-
-        Panier panier = new Panier();
-
-        panier.setIdPanier(GenerateID.GeneratePanierID());
-        panier.setUser(user);
-        panier.setPrice(price);
-        panier.setQuantity(1);
-        panier.setDateAdded(LocalDateTime.now());
-
-        panierInterface.save(panier);
     }
 
     @Transactional
     public  void deleteProductInPanier(String idPrice , String idUser) {
 
-        int qte = panierInterface.ifAlreadyExistProdctInPanier(idPrice , idUser );
+        User user = customerInterface.getByIdUser(idUser)
+                .orElseThrow(() -> new UserNotFoundException("L'utilisateur n'existe pas"));
 
-        if(qte == 0 ){
-            throw new ProductNotFoundException("Produit n'existe pas dans le panier");
-        }
+        Price price = priceInterface.findByIdPrice(idPrice)
+                .orElseThrow(() -> new ProductNotFoundException("Le produit n'existe pas"));
 
-        panierInterface.deleteProductInPanier(idPrice , idUser);
+        Panier panier = panierInterface.findPanierByUser(idUser).orElseThrow(() -> new ResourceNotFoundException("Cette Utilisateur n'a pas de panier"));
+
+        lignePanierInterface.deleteProductInPanier(idPrice , panier);
+
+        panier.setUpdateDate(LocalDateTime.now());
+        panierInterface.save(panier);
     }
 
     public int getQuantityProductInPanier(String idPrice , String idUser) {
-        Price price = priceInterface.findByIdPrice(idPrice);
+        User user = customerInterface.getByIdUser(idUser).orElseThrow(() -> new UserNotFoundException("L'utilisateur n'existe pas"));
 
-        if(price == null) {
-            throw new ProductNotFoundException("Le price n'existe pas");
-        }
+        Price price = priceInterface.findByIdPrice(idPrice).orElseThrow(() -> new ProductNotFoundException("Le produit n'existe pas"));
 
-        return panierInterface.ifAlreadyExistProdctInPanier(idPrice , idUser );
+        Panier panier = panierInterface.findPanierByUser(idUser).orElseThrow(() -> new ResourceNotFoundException("Cette Utilisateur n'a pas de panier"));
+
+        return lignePanierInterface.findQuantityByProductInPanier(idPrice , panier);
 
     }
 
-    @Transactional
+    @Transactional(readOnly = true)
     public List<ProductPanierDTO> getAllProductInPanier(String idUser) {
 
-        User user = customerInterface.getByIdUser(idUser);
+        User user = customerInterface.getByIdUser(idUser).orElseThrow(() -> new UserNotFoundException("L'utilisateur n'existe pas"));
 
-        if (user == null) {
-            throw new UserNotFoundException("L'utilisateur n'existe pas");
-        }
-
-        List<Object[]> results = panierInterface.findPanierByUser(user);
+        List<Object[]> results = lignePanierInterface.findLignesPanierWithPromoByUser(user);
 
         return results.stream().map(result -> {
-            Panier item = (Panier) result[0];
 
-            // CORRECTION ICI : Utilisation de Number pour éviter le ClassCastException
-            Double tauxRemise = (result[1] != null) ? ((Number) result[1]).doubleValue() : 0.0;
+            LignePanier item = (LignePanier) result[0];
+
+            double tauxRemise = ((Number) result[1]).doubleValue();
 
             BigDecimal originalPrice = item.getPrice().getPrice();
             boolean hasPromo = (tauxRemise > 0);
 
-            Double priceWithPromo = 0.0;
-            if (hasPromo) {
-                // On calcule le prix remisé
-                priceWithPromo = originalPrice.doubleValue() * (1 - (tauxRemise / 100));
-            } else {
-                // Si pas de promo, le prix promo est égal au prix original (ou 0 selon ton DTO)
-                priceWithPromo = originalPrice.doubleValue();
-            }
+            Double priceWithPromo = hasPromo
+                    ? originalPrice.doubleValue() * (1 - (tauxRemise / 100))
+                    : originalPrice.doubleValue();
 
             return new ProductPanierDTO(
                     item.getPrice().getIdPrice(),
@@ -124,52 +130,65 @@ public class PanierService {
                     priceWithPromo,
                     originalPrice,
                     item.getQuantity(),
-                    item.getPrice().getProduct().getImageUrl()
+                    item.getPrice().getProduct().getImageUrl(),
+                    item.getPrice().getStock()
             );
         }).toList();
     }
 
     @Transactional
     public  void deletePanier(String idQuincaillerie , String idUser) {
-        panierInterface.deletePanierByQuincaillerie(idQuincaillerie , idUser);
+        User user = customerInterface.getByIdUser(idUser).orElseThrow(() -> new UserNotFoundException("L'utilisateur n'existe pas"));
+
+        Panier panier = panierInterface.findPanierByUser(idUser).orElseThrow(() -> new ResourceNotFoundException("Cette Utilisateur n'a pas de panier"));
+
+        lignePanierInterface.deletePanierByQuincaillerie(idQuincaillerie , user);
     }
 
     @Transactional
     public void deleteAllPaniers(String idUser) {
-        User user = customerInterface.getByIdUser(idUser);
-        if(user == null){
-            throw new UserNotFoundException("Utilisateur inexistant");
-        }
-        panierInterface.deletePanierByUser(user);
+        User user = customerInterface.getByIdUser(idUser).orElseThrow(() -> new UserNotFoundException("L'utilisateur n'existe pas"));
+
+        Panier panier = panierInterface.findPanierByUser(idUser).orElseThrow(() -> new ResourceNotFoundException("Cette Utilisateur n'a pas de panier"));
+
+        panierInterface.delete(panier);
     }
 
     @Transactional
     public void addQuantityToPanier(String idPrice, String idUser) {
+        User user = customerInterface.getByIdUser(idUser).orElseThrow(() -> new UserNotFoundException("L'utilisateur n'existe pas"));
 
-        Panier panier = panierInterface.findProductInPanierByUser(idUser , idPrice);
+        Price price = priceInterface.findByIdPrice(idPrice).orElseThrow(() -> new ProductNotFoundException("Le produit n'existe pas"));
 
-        if(panier == null){
-            throw new ProductNotFoundException("Le price n'existe pas");
+        Panier panier = panierInterface.findPanierByUser(idUser).orElseThrow(() -> new ResourceNotFoundException("Cette Utilisateur n'a pas de panier"));
+
+        LignePanier lignePanier = lignePanierInterface.getProductInPanier(idPrice,panier);
+        int quantite = lignePanier.getQuantity() + 1;
+        if(quantite <= lignePanier.getPrice().getStock()) {
+            lignePanier.setQuantity(quantite);
+
+            lignePanierInterface.save(lignePanier);
+        }else {
+            throw new ProductNotFoundException("le stock est epuisé");
         }
-
-        int quantite = panier.getQuantity() + 1;
-        panier.setQuantity(quantite);
-
-        panierInterface.save(panier);
     }
 
     @Transactional
     public void removeQuantityToPanier(String idPrice, String idUser) {
+        User user = customerInterface.getByIdUser(idUser).orElseThrow(() -> new UserNotFoundException("L'utilisateur n'existe pas"));
 
-        Panier panier = panierInterface.findProductInPanierByUser(idUser , idPrice);
+        Price price = priceInterface.findByIdPrice(idPrice).orElseThrow(() -> new ProductNotFoundException("Le produit n'existe pas"));
 
-        if(panier == null){
-            throw new ProductNotFoundException("Le price n'existe pas");
+        Panier panier = panierInterface.findPanierByUser(idUser).orElseThrow(() -> new ResourceNotFoundException("Cette Utilisateur n'a pas de panier"));
+
+        LignePanier lignePanier = lignePanierInterface.getProductInPanier(idPrice,panier);
+        int nouvelleQuantite = lignePanier.getQuantity() - 1;
+
+        if (nouvelleQuantite <= 0) {
+            lignePanierInterface.delete(lignePanier);
+        } else {
+            lignePanier.setQuantity(nouvelleQuantite);
+            lignePanierInterface.save(lignePanier);
         }
-
-        int quantite = panier.getQuantity() - 1;
-        panier.setQuantity(quantite);
-
-        panierInterface.save(panier);
     }
 }
