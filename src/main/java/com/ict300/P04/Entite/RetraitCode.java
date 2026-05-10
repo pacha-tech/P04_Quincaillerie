@@ -3,6 +3,7 @@ package com.ict300.P04.Entite;
 import jakarta.persistence.*;
 import lombok.Data;
 
+import java.time.Instant;
 import java.time.LocalDateTime;
 
 @Entity
@@ -17,7 +18,7 @@ public class RetraitCode {
     private String codeHash;
 
     @Column(name = "expiration_date")
-    private LocalDateTime expirationdate;
+    private Instant expirationdate;
 
     @Column(name = "tentatives_echouees")
     private int tentativesEchouees;

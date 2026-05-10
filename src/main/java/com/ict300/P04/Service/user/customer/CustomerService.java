@@ -24,6 +24,7 @@ public class CustomerService {
         userInfosDTO.setPhone(user.getPhone());
         userInfosDTO.setPhotoUrl(user.getPhotoUrl());
         userInfosDTO.setRole(user.getRole());
+        userInfosDTO.setEmail(user.getEmail());
 
         return userInfosDTO;
     }

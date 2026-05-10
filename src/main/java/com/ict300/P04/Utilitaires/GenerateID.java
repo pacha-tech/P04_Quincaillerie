@@ -52,6 +52,14 @@ public class GenerateID {
         return sb.toString();
     }
 
+    public static String GenerateStockID() {
+        StringBuilder sb = new StringBuilder("STOCK");
+        for (int i = 0; i < 5; i++) {
+            sb.append(ALPHABET.charAt(RANDOM.nextInt(ALPHABET.length())));
+        }
+        return sb.toString();
+    }
+
     public static String GenerateReportID() {
         StringBuilder sb = new StringBuilder("REPO");
         for (int i = 0; i < 6; i++) {

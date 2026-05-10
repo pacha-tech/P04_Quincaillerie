@@ -20,6 +20,7 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.time.Instant;
 import java.time.LocalDateTime;
 
 @Service
@@ -61,7 +62,7 @@ public class RetraitService {
         }
 
 
-        if (LocalDateTime.now().isAfter(retraitCode.getExpirationdate())) {
+        if (Instant.now().isAfter(retraitCode.getExpirationdate())) {
             throw new OtpCodeExpiredException("Le code a expiré, veuillez en demander un autre.");
         }
 

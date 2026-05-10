@@ -6,6 +6,7 @@ import jakarta.persistence.EntityManager;
 import jakarta.persistence.PersistenceContext;
 import org.springframework.stereotype.Repository;
 
+import java.time.LocalDateTime;
 import java.util.List;
 
 @Repository
@@ -33,6 +34,20 @@ public class CommandeInterfaceImpl implements CommandeCustomInterface {
 
         return entityManager.createQuery(jpql , Commande.class)
                 .setParameter("id" , idQuincaillerie)
+                .getResultList();
+    }
+
+    @Override
+    public List<Commande> getCommandesByQuincaillerieAndDate(String idQuincaillerie, LocalDateTime startDate) {
+        String jpql = "SELECT c FROM Commande c " +
+                "JOIN FETCH c.detailCommande dc " +
+                "WHERE c.quincaillerie.idQuincaillerie = :id " +
+                "AND dc.dateCommande >= :startDate " +
+                "ORDER BY dc.dateCommande ASC";
+
+        return entityManager.createQuery(jpql, Commande.class)
+                .setParameter("id", idQuincaillerie)
+                .setParameter("startDate", startDate)
                 .getResultList();
     }
 }

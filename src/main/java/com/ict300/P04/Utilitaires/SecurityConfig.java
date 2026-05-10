@@ -60,6 +60,7 @@ public class SecurityConfig {
                         .requestMatchers("/quincaillerie/otp/valider").hasRole("VENDEUR")
                         .requestMatchers("/quincaillerie/otp/getOtp/**").hasRole("CLIENT")
                         .requestMatchers("/quincaillerie/commande/**").authenticated()
+                        .requestMatchers("/quincaillerie/stats/**").hasRole("VENDEUR")
                         .requestMatchers("/quincaillerie/ping").permitAll()
                         .requestMatchers("/v3/api-docs/**").permitAll()
                         .requestMatchers("/swagger-ui/**").permitAll()

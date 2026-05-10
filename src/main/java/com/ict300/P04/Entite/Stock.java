@@ -1,5 +1,6 @@
 package com.ict300.P04.Entite;
 
+import com.ict300.P04.Utilitaires.MouvementStock;
 import jakarta.persistence.*;
 import lombok.Data;
 
@@ -17,8 +18,9 @@ public class Stock {
     @JoinColumn(name = "id_price")
     private Price price;
 
+    @Enumerated(EnumType.STRING)
     @Column(name = "Type_mouvement")
-    private String typeMouvement;
+    private MouvementStock typeMouvement;
 
     @Column(name = "Quantity")
     private int quantity;

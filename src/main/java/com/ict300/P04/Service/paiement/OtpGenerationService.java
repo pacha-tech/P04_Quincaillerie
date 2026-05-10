@@ -17,7 +17,9 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.security.SecureRandom;
+import java.time.Instant;
 import java.time.LocalDateTime;
+import java.time.temporal.ChronoUnit;
 
 @Service
 public class OtpGenerationService {
@@ -54,8 +56,8 @@ public class OtpGenerationService {
         String codeEnClair = genererCodeSixChiffres();
         String codeHashe = passwordEncoder.encode(codeEnClair);
 
-        LocalDateTime dateCreation = LocalDateTime.now();
-        LocalDateTime dateExpiration = dateCreation.plusMinutes(5);
+        Instant dateCreation = Instant.now();
+        Instant dateExpiration = dateCreation.plus(5 , ChronoUnit.MINUTES);
 
 
         RetraitCode retraitCode = retraitCodeInterface.findByCommandeId(idCommande).orElseGet(() -> {

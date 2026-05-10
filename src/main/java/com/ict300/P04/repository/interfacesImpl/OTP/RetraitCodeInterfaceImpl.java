@@ -6,6 +6,7 @@ import jakarta.persistence.EntityManager;
 import jakarta.persistence.PersistenceContext;
 import org.springframework.stereotype.Repository;
 
+import java.time.Instant;
 import java.time.LocalDateTime;
 import java.util.Optional;
 
@@ -27,7 +28,7 @@ public class RetraitCodeInterfaceImpl implements RetraitCodeCustomInterface {
     }
 
     @Override
-    public void deleteOldCodes(LocalDateTime limit) {
+    public void deleteOldCodes(Instant limit) {
         String jpql = "DELETE FROM RetraitCode rc " +
                 "WHERE rc.expirationdate < :date ";
 

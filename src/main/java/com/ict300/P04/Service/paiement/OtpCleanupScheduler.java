@@ -9,7 +9,9 @@ import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.time.Instant;
 import java.time.LocalDateTime;
+import java.time.temporal.ChronoUnit;
 
 @Service
 @Slf4j
@@ -36,7 +38,7 @@ public class OtpCleanupScheduler {
     private void executerNettoyage() {
         log.info("Suppression des OTP expirés depuis plus de 7 jours...");
 
-        LocalDateTime ilYaUneSemaine = LocalDateTime.now().minusDays(7);
+        Instant ilYaUneSemaine = Instant.now().plus(7, ChronoUnit.DAYS);
         retraitCodeInterface.deleteOldCodes(ilYaUneSemaine);
 
         log.info("🧹 [SCHEDULER] Nettoyage des OTP effectué avec succès.");

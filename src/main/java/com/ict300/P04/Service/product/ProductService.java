@@ -13,10 +13,12 @@ import com.ict300.P04.Exception.ResourceNotFoundException;
 import com.ict300.P04.Service.cloudinary.UploadImage;
 import com.ict300.P04.Service.cloudinary.CloudinaryService;
 import com.ict300.P04.Utilitaires.GenerateID;
+import com.ict300.P04.Utilitaires.MouvementStock;
 import com.ict300.P04.repository.interfaces.category.CategoryInterface;
 import com.ict300.P04.repository.interfaces.price.PriceInterface;
 import com.ict300.P04.repository.interfaces.product.ProductInterface;
 import com.ict300.P04.repository.interfaces.quincaillerie.QuincaillerieInterface;
+import com.ict300.P04.repository.interfaces.stock.StockInterface;
 import com.ict300.P04.repository.interfaces.user.seller.SellerInterface;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -42,6 +44,7 @@ public class ProductService {
     private final PriceInterface priceInterface;
     private final CloudinaryService cloudinaryService;
     private  final UploadImage uploadImage;
+    private final StockInterface stockInterface;
 
 
 
@@ -196,6 +199,16 @@ public class ProductService {
         price.setPurchasePrice(dto.getPurchasePrice());
         price.setStock(dto.getStock());
         priceInterface.save(price);
+
+        Stock stock = new Stock();
+        stock.setIdStock(GenerateID.GenerateStockID());
+        stock.setPrice(price);
+        stock.setQuantity(price.getStock());
+        stock.setDateMouvement(LocalDateTime.now());
+        stock.setTypeMouvement(MouvementStock.ENTREE);
+        stock.setComment("Ajout");
+
+        stockInterface.save(stock);
     }
 
     @Transactional
