@@ -8,6 +8,7 @@ import org.springframework.stereotype.Repository;
 
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.Optional;
 
 @Repository
 public class CommandeInterfaceImpl implements CommandeCustomInterface {
@@ -49,5 +50,15 @@ public class CommandeInterfaceImpl implements CommandeCustomInterface {
                 .setParameter("id", idQuincaillerie)
                 .setParameter("startDate", startDate)
                 .getResultList();
+    }
+
+    @Override
+    public Optional<Commande> getCommandeByIdTransaction(String idTransaction) {
+        String jpql = "SELECT c FROM Commande c " +
+                "WHERE c.idTransaction = :id ";
+
+        return entityManager.createQuery(jpql , Commande.class)
+                .setParameter("id" , idTransaction)
+                .getResultList().stream().findFirst();
     }
 }

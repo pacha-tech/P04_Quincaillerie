@@ -25,5 +25,12 @@ public class LigneCommande {
     private int quantity;
 
     @Column(name = "Historical_price" , precision = 12 , scale = 2)
-    private BigDecimal historicalPrice;
+    private BigDecimal pricePaye;
+
+    @Column(name = "Historical_base_price" , precision = 12 , scale = 2)
+    private BigDecimal priceDeBase;
+
+    @ManyToOne()
+    @JoinColumn(name = "id_campagne_promotion")
+    private CampagnePromotion campagnePromotion;
 }

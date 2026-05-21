@@ -35,6 +35,9 @@ public class CampagnePromotion {
     @OneToMany(mappedBy = "campagnePromotion")
     private List<Promotion> promotions = new ArrayList<>();
 
+    @OneToMany(mappedBy = "campagnePromotion")
+    private List<LigneCommande> ligneCommandes = new ArrayList<>();
+
     @Column(name = "name")
     private String nom;
 }

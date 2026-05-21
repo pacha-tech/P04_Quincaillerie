@@ -40,6 +40,9 @@ public class Price {
     @Column(name = "Stock")
     private int stock;
 
+    @Column(name = "Stock_seuil")
+    private Integer stockSeuil;
+
     @OneToMany(mappedBy = "price")
     private List<Report> reports = new ArrayList<>();
 

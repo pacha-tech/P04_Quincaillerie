@@ -3,6 +3,7 @@ package com.ict300.P04.repository.interfaces.product;
 import com.ict300.P04.Entite.Price;
 import com.ict300.P04.Entite.Product;
 import com.ict300.P04.Entite.Quincaillerie;
+import com.ict300.P04.Entite.Stock;
 
 import java.math.BigDecimal;
 import java.time.LocalDateTime;

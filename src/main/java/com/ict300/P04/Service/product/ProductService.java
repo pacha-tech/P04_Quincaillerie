@@ -1,5 +1,6 @@
 package com.ict300.P04.Service.product;
 
+import com.ict300.P04.DTO.localisation.LocalisationDTO;
 import com.ict300.P04.DTO.price.response.PriceSearchProductDTO;
 import com.ict300.P04.DTO.product.request.AddProductDTO;
 import com.ict300.P04.DTO.product.request.UpdateProductDTO;
@@ -12,7 +13,9 @@ import com.ict300.P04.Exception.ProductNotFoundException;
 import com.ict300.P04.Exception.ResourceNotFoundException;
 import com.ict300.P04.Service.cloudinary.UploadImage;
 import com.ict300.P04.Service.cloudinary.CloudinaryService;
+import com.ict300.P04.Service.localisation.LocalisationService;
 import com.ict300.P04.Utilitaires.GenerateID;
+import com.ict300.P04.Utilitaires.GeoUtils;
 import com.ict300.P04.Utilitaires.MouvementStock;
 import com.ict300.P04.repository.interfaces.category.CategoryInterface;
 import com.ict300.P04.repository.interfaces.price.PriceInterface;
@@ -26,10 +29,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
 import java.time.LocalDateTime;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 
 @Slf4j
@@ -45,19 +45,57 @@ public class ProductService {
     private final CloudinaryService cloudinaryService;
     private  final UploadImage uploadImage;
     private final StockInterface stockInterface;
+    private final LocalisationService localisationService;
 
 
 
-    public List<SearchProductDTO> SearchProductByName(String query) {
+    public List<SearchProductDTO> SearchProductByName(String query , Double longitude , Double latitude , String scope) {
 
         List<Object[]> results = productInterface.findByNameContainingIgnoreCase(query);
 
 
         Map<Product, List<PriceSearchProductDTO>> groupedByProduct = new HashMap<>();
 
+        double maxDistanceKm = GeoUtils.convertScopeToKilometers(scope);
+        boolean isCityScope = "ville".equalsIgnoreCase(scope);
+        boolean isRegionScope = "region".equalsIgnoreCase(scope);
+
+        String userCity = null;
+        String userRegion = null;
+
+        if (latitude != null && longitude != null && (isCityScope || isRegionScope)) {
+            LocalisationDTO loc = localisationService.getAddress(latitude, longitude);
+            userCity = loc.getVille();
+            userRegion = loc.getRegion();
+            log.info("Client localisé dans la ville: {}, région: {}", userCity, userRegion);
+        }
+
         for (Object[] res : results) {
             Price price = (Price) res[0];
             Product product = price.getProduct();
+            Quincaillerie quincaillerie = price.getQuincaillerie();
+
+            Double storeLat = quincaillerie.getLatitude().doubleValue();
+            Double storeLng = quincaillerie.getLongitude().doubleValue();
+
+
+            if (latitude != null && longitude != null) {
+                if (isCityScope) {
+                    if (userCity == null || "Non défini".equals(userCity) || !userCity.equalsIgnoreCase(quincaillerie.getCity())) {
+                        continue;
+                    }
+                } else if (isRegionScope) {
+                    if (userRegion == null || "Non défini".equals(userRegion) || !userRegion.equalsIgnoreCase(quincaillerie.getRegion())) {
+                        continue;
+                    }
+                } else if (storeLat != null && storeLng != null) {
+                    double distance = GeoUtils.calculateDistance(latitude, longitude, storeLat, storeLng);
+                    if (distance > maxDistanceKm) {
+                        continue;
+                    }
+                }
+            }
+
             Double taux = (res[1] != null) ? ((Number) res[1]).doubleValue() : 0.0;
 
             boolean inPromo = taux > 0;
@@ -82,6 +120,14 @@ public class ProductService {
 
         return groupedByProduct.entrySet().stream().map(entry -> {
             Product p = entry.getKey();
+
+            List<PriceSearchProductDTO> sortedPrices = entry.getValue();
+            if (latitude != null && longitude != null) {
+                sortedPrices.sort(Comparator.comparingDouble(dto ->
+                        GeoUtils.calculateDistance(latitude, longitude, dto.getLatitudeQuincaillerie().doubleValue(), dto.getLongitudeQuincaillerie().doubleValue())
+                ));
+            }
+
             return new SearchProductDTO(
                     p.getIdProduct(),
                     p.getCategory().getIdCategory(),
@@ -280,7 +326,7 @@ public class ProductService {
         ProductStockDTO dto = new ProductStockDTO();
         Product p = entity.getProduct();
 
-        dto.setId(p.getIdProduct());
+        dto.setIdPrice(entity.getIdPrice());
         dto.setName(p.getName());
         dto.setBrand(p.getBrand());
         dto.setCategory(p.getCategory().getName());

@@ -6,7 +6,7 @@ import lombok.NoArgsConstructor;
 
 @Data @AllArgsConstructor @NoArgsConstructor
 public class ProductStockDTO {
-    private String id;
+    private String idPrice;
     private String name;
     private String brand;
     private String category;

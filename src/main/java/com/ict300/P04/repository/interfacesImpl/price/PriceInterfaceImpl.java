@@ -158,4 +158,20 @@ public class PriceInterfaceImpl implements PriceCustomInterface {
                 .setParameter("now", LocalDate.now())
                 .getResultList();
     }
+
+    @Override
+    public List<Object[]> findPricesByCategory(String idCategory) {
+        String jpql = "SELECT pr, p.campagnePromotion.tauxRemise " +
+                "FROM Price pr " +
+                "LEFT JOIN Promotion p ON p.price.idPrice = pr.idPrice " +
+                "AND p.campagnePromotion.estActif = true " +
+                "AND p.campagnePromotion.dateDebut <= :now " +
+                "AND p.campagnePromotion.dateFin >= :now " +
+                "WHERE pr.product.category.idCategory = :id";
+
+        return entityManager.createQuery(jpql , Object[].class)
+                .setParameter("id", idCategory)
+                .setParameter("now", LocalDate.now())
+                .getResultList();
+    }
 }

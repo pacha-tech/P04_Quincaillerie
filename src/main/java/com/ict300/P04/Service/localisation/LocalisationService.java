@@ -1,9 +1,10 @@
 package com.ict300.P04.Service.localisation;
 
 import com.ict300.P04.DTO.localisation.LocalisationDTO;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpEntity;
-import org.springframework.http.HttpHeaders; // 🟢 Le bon import Spring
-import org.springframework.http.HttpMethod;  // 🟢 Ajout de HttpMethod
+import org.springframework.http.HttpHeaders;
+import org.springframework.http.HttpMethod;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestTemplate;
@@ -13,13 +14,15 @@ import java.util.Map;
 @Service
 public class LocalisationService {
 
+    @Autowired
+    private RestTemplate restTemplate;
+
     public LocalisationDTO getAddress(double lat, double lng) {
         String url = String.format(
                 "https://nominatim.openstreetmap.org/reverse?format=json&lat=%s&lon=%s&zoom=18&addressdetails=1",
                 lat, lng
         );
 
-        RestTemplate restTemplate = new RestTemplate();
 
         HttpHeaders headers = new HttpHeaders();
         headers.set("User-Agent", "Brixel Backend");

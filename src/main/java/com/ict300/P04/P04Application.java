@@ -6,6 +6,7 @@ import com.google.firebase.FirebaseOptions;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.core.io.ClassPathResource;
+import org.springframework.scheduling.annotation.EnableAsync;
 import org.springframework.scheduling.annotation.EnableScheduling;
 
 import java.io.ByteArrayInputStream;
@@ -14,6 +15,7 @@ import java.nio.charset.StandardCharsets;
 
 @SpringBootApplication
 @EnableScheduling
+@EnableAsync
 public class P04Application {
 
 	public static void main(String[] args) {

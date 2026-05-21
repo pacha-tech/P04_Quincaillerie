@@ -120,9 +120,9 @@ public class FactureService {
             for (LigneCommande ligne : commande.getLigneCommandes()) {
                 table.addCell(createCell(ligne.getPrice().getProduct().getName(), fontNormal, Element.ALIGN_LEFT));
                 table.addCell(createCell(String.valueOf(ligne.getQuantity()), fontNormal, Element.ALIGN_CENTER));
-                table.addCell(createCell(ligne.getHistoricalPrice().toString() + " FCFA", fontNormal, Element.ALIGN_RIGHT));
+                table.addCell(createCell(ligne.getPricePaye().toString() + " FCFA", fontNormal, Element.ALIGN_RIGHT));
 
-                BigDecimal sousTotal = ligne.getHistoricalPrice().multiply(BigDecimal.valueOf(ligne.getQuantity()));
+                BigDecimal sousTotal = ligne.getPricePaye().multiply(BigDecimal.valueOf(ligne.getQuantity()));
                 table.addCell(createCell(sousTotal.toString() + " FCFA", fontNormal, Element.ALIGN_RIGHT));
             }
             document.add(table);

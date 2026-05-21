@@ -9,23 +9,24 @@ import com.ict300.P04.Entite.*;
 import com.ict300.P04.Exception.AppException;
 import com.ict300.P04.Exception.ResourceNotFoundException;
 import com.ict300.P04.Utilitaires.GenerateID;
+import com.ict300.P04.Utilitaires.GeoUtils;
 import com.ict300.P04.repository.interfaces.campagnePromotion.CampagnePromotionInterface;
 import com.ict300.P04.repository.interfaces.price.PriceInterface;
 import com.ict300.P04.repository.interfaces.promotion.PromotionInterface;
 import com.ict300.P04.repository.interfaces.quincaillerie.QuincaillerieInterface;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.math.BigDecimal;
 import java.math.RoundingMode;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Map;
-import java.util.Objects;
+import java.util.*;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 @Service
+@Slf4j
 public class PromotionService {
 
     @Autowired
@@ -42,7 +43,6 @@ public class PromotionService {
 
     @Transactional
     public void addPromotion(AddPromotionDTO dto, String idQuincaillerie) {
-
         Quincaillerie quincaillerie = quincaillerieInterface.getQuincaillerie(idQuincaillerie).orElse(null);
 
         if (dto.getIdsPrices() == null || dto.getIdsPrices().isEmpty()) {
@@ -55,29 +55,22 @@ public class PromotionService {
 
         List<Price> prices = new ArrayList<>();
         for (String idPrice : dto.getIdsPrices()) {
-
-
             Price price = priceInterface.findByIdPrice(idPrice).orElse(null);
             if (price == null) {
                 throw new AppException("Le produit " + idPrice + " n'existe pas");
             }
 
-
             if (!price.getQuincaillerie().equals(quincaillerie)) {
                 throw new AppException("Le produit " + idPrice + " n'appartient pas à votre quincaillerie");
             }
 
-
             boolean chevauchement = promotionInterface.existsActivePromoForPeriod(idPrice, dto.getDateDebut(), dto.getDateFin());
-
             if (chevauchement) {
                 throw new AppException("Le produit " + idPrice + " a déjà une promotion active sur cette période");
             }
-
             prices.add(price);
         }
 
-        // 3. Créer la campagne
         CampagnePromotion campagne = new CampagnePromotion();
         campagne.setIdCampagnePromotion(GenerateID.GenerateCampagneID());
         campagne.setNom(dto.getNom());
@@ -91,22 +84,19 @@ public class PromotionService {
 
         for (Price price : prices) {
             Promotion promotion = new Promotion();
-
             promotion.setIdPromotion(GenerateID.GeneratePromotionID());
             promotion.setPrice(price);
             promotion.setCampagnePromotion(campagne);
-
             promotionInterface.save(promotion);
         }
     }
 
     @Transactional
     public void deletePromotion(String idCampagnePromotion , String idQuincaillerie) {
-
         CampagnePromotion campagnePromotion = campagnePromotionInterface.getByIdCampagne(idCampagnePromotion);
 
         if(campagnePromotion == null ){
-            throw new AppException("Le Camapagne " + idCampagnePromotion + " n'existe pas");
+            throw new AppException("La Campagne " + idCampagnePromotion + " n'existe pas");
         }
 
         if(!Objects.equals(campagnePromotion.getQuincaillerie().getIdQuincaillerie(), idQuincaillerie)) {
@@ -114,10 +104,8 @@ public class PromotionService {
         }
 
         campagnePromotion.setEstActif(false);
-
         campagnePromotionInterface.save(campagnePromotion);
     }
-
 
     public List<ProduitPromotionDTO> getAllProduitOutPromotionByQuincaillerie(String idQuincaillerie) {
         Quincaillerie quincaillerie = quincaillerieInterface.getQuincaillerie(idQuincaillerie).orElse(null);
@@ -139,35 +127,48 @@ public class PromotionService {
         }).toList();
     }
 
-    public List<SearchProductDTO> getAllProduitInPromotionGrouped() {
-
+    public List<SearchProductDTO> getAllProduitInPromotionGrouped(Double latitude , Double longitude ) {
         List<Object[]> results = priceInterface.findPricesWithActivePromotion();
 
-
-        Map<Product, List<PriceSearchProductDTO>> groupedByProduct = results.stream()
+        Map<Product, List<Object[]>> groupedByProduct = results.stream()
                 .collect(Collectors.groupingBy(
-                        result -> ((Price) result[0]).getProduct(),
-                        Collectors.mapping(this::mapToPriceSearchDTO, Collectors.toList())
+                        result -> ((Price) result[0]).getProduct()
                 ));
 
+        Stream<Map.Entry<Product, List<Object[]>>> stream = groupedByProduct.entrySet().stream();
 
-        return groupedByProduct.entrySet().stream()
-                .map(entry -> {
-                    Product product = entry.getKey();
-                    List<PriceSearchProductDTO> prices = entry.getValue();
+        // ◄ UTILISATION DU NOUVEL UTILITAIRE POUR LE TRI PAR DISTANCE
+        if (latitude != null && longitude != null) {
+            stream = stream.peek(entry -> entry.getValue().sort(Comparator.comparingDouble(res ->
+                            GeoUtils.calculateDistance(latitude, longitude,
+                                    ((Price) res[0]).getQuincaillerie().getLatitude().doubleValue(),
+                                    ((Price) res[0]).getQuincaillerie().getLongitude().doubleValue())
+                    )))
+                    .sorted(Comparator.comparingDouble(entry ->
+                            GeoUtils.calculateDistance(latitude, longitude,
+                                    ((Price) entry.getValue().get(0)[0]).getQuincaillerie().getLatitude().doubleValue(),
+                                    ((Price) entry.getValue().get(0)[0]).getQuincaillerie().getLongitude().doubleValue())
+                    ));
+        }
 
-                    SearchProductDTO dto = new SearchProductDTO();
-                    dto.setIdProduct(product.getIdProduct());
-                    dto.setIdCategory(product.getCategory().getIdCategory());
-                    dto.setName(product.getName());
-                    dto.setUnite(product.getUnit());
-                    dto.setImageUrl(product.getImageUrl());
-                    dto.setDescription(product.getDescription());
-                    dto.setPriceSearchProductsDTO(prices);
+        return stream.map(entry -> {
+            Product product = entry.getKey();
 
-                    return dto;
-                })
-                .collect(Collectors.toList());
+            List<PriceSearchProductDTO> prices = entry.getValue().stream()
+                    .map(this::mapToPriceSearchDTO)
+                    .collect(Collectors.toList());
+
+            SearchProductDTO dto = new SearchProductDTO();
+            dto.setIdProduct(product.getIdProduct());
+            dto.setIdCategory(product.getCategory().getIdCategory());
+            dto.setName(product.getName());
+            dto.setUnite(product.getUnit());
+            dto.setImageUrl(product.getImageUrl());
+            dto.setDescription(product.getDescription());
+            dto.setPriceSearchProductsDTO(prices);
+
+            return dto;
+        }).collect(Collectors.toList());
     }
 
     private PriceSearchProductDTO mapToPriceSearchDTO(Object[] result) {
@@ -175,7 +176,6 @@ public class PromotionService {
         Number tauxValue = (Number) result[1];
         Double tauxRemise = tauxValue.doubleValue();
         Quincaillerie store = price.getQuincaillerie();
-
 
         BigDecimal originalPrice = price.getPrice();
         BigDecimal taux = BigDecimal.valueOf(tauxRemise);
@@ -185,14 +185,12 @@ public class PromotionService {
                 BigDecimal.ONE.subtract(taux.divide(cent, 2, RoundingMode.HALF_UP))
         );
 
-
         PriceSearchProductDTO priceDTO = new PriceSearchProductDTO();
         priceDTO.setIdPrice(price.getIdPrice());
         priceDTO.setIdQuincaillerie(store.getIdQuincaillerie());
         priceDTO.setQuincaillerieName(store.getStoreName());
         priceDTO.setPrice(originalPrice);
         priceDTO.setStock(price.getStock());
-
 
         priceDTO.setLatitudeQuincaillerie(store.getLatitude());
         priceDTO.setLongitudeQuincaillerie(store.getLongitude());
@@ -217,6 +215,7 @@ public class PromotionService {
             Long nombreProduits = (Long) result[1];
 
             return new PromotionDTO(
+                    cp.getIdCampagnePromotion(),
                     cp.getNom(),
                     cp.getTauxRemise().toString(),
                     cp.getDateDebut().toString(),
@@ -226,5 +225,4 @@ public class PromotionService {
             );
         }).toList();
     }
-
 }

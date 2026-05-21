@@ -109,6 +109,11 @@ public class GlobalExceptionHandler {
         return new ResponseEntity<>(new ApiError(HttpStatus.NOT_FOUND, ex.getMessage()), HttpStatus.NOT_FOUND);
     }
 
+    @ExceptionHandler(PaymentGatewayException.class)
+    public ResponseEntity<ApiError> handlePayment(PaymentGatewayException ex) {
+        return new ResponseEntity<>(new ApiError(HttpStatus.BAD_GATEWAY, ex.getMessage()), HttpStatus.BAD_GATEWAY);
+    }
+
 
     @ExceptionHandler(Exception.class)
     public ResponseEntity<ApiError> handleGlobalException(Exception ex) {

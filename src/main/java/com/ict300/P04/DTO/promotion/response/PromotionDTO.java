@@ -6,6 +6,7 @@ import lombok.NoArgsConstructor;
 
 @Data @AllArgsConstructor @NoArgsConstructor
 public class PromotionDTO {
+    private String idCampagne;
     private String name;
     private String taux;
     private String dateDebut;

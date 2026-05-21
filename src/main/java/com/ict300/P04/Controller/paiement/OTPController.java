@@ -63,7 +63,7 @@ public class OTPController {
             ipVendeur = ipVendeur.split(",")[0].trim();
         }
 
-        retraitService.validerRetrait(requestBody , ipVendeur , userAgentVendeur , quincaillerieId);
+        retraitService.validerRetrait(requestBody , ipVendeur , userAgentVendeur , quincaillerieId , uid);
 
         return ResponseEntity.ok("Code valide vous pouvez livrer la marchandise les fonds seront transferer des que possible");
     }

@@ -1,5 +1,6 @@
 package com.ict300.P04.Controller.Panier;
 
+import com.ict300.P04.Controller.CheckController;
 import com.ict300.P04.DTO.product.response.ProductPanierDTO;
 import com.ict300.P04.Exception.ApiError;
 import com.ict300.P04.Exception.ApiResponse;
@@ -8,7 +9,8 @@ import com.ict300.P04.Exception.ProductNotFoundException;
 import com.ict300.P04.Service.panier.PanierService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
-import org.springframework.beans.factory.annotation.Autowired;
+import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
@@ -16,144 +18,84 @@ import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 
+@Slf4j
 @RestController
 @RequestMapping("/quincaillerie/panier")
-@Tag(name = "ManagePanier", description = "Gestion des panier")
+@RequiredArgsConstructor
+@Tag(name = "ManagePanier", description = "Gestion des paniers d'achat")
 public class PanierController {
 
-    @Autowired
-    private PanierService panierService;
+    private final PanierService panierService;
 
+    @PostMapping("/addToPanier")
     @Operation(summary = "Ajout d'un produit dans le panier pour un utilisateur connecté")
-    @GetMapping("/addToPanier")
-    public ResponseEntity<?> addToPanier(@RequestParam String idPrice , Authentication authentication) {
+    public ResponseEntity<?> addToPanier(@RequestParam String idPrice, Authentication authentication) {
+        var errorResponse = validatePanierAccess(authentication);
+        if (errorResponse.isPresent()) return errorResponse.get();
 
-        if (authentication == null || !authentication.isAuthenticated()) {
-            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(new ApiError(HttpStatus.UNAUTHORIZED, "Utilisateur non authentifié"));
-        }
-
-        String uid = authentication.getName();
-
-        @SuppressWarnings("unchecked")
-        Map<String, Object> claims = (Map<String, Object>) authentication.getDetails();
-        if (claims == null) {
-            return ResponseEntity.status(HttpStatus.FORBIDDEN)
-                    .body(new ApiError(HttpStatus.FORBIDDEN, "Aucun détail d'authentification disponible"));
-        }
-
-        String role = (String) claims.get("role");
-        if (role == null || role.trim().isEmpty()) {
-            return ResponseEntity.status(HttpStatus.FORBIDDEN)
-                    .body(new ApiError(HttpStatus.FORBIDDEN, "Pas de Role vous devez etre connectez"));
-        }
-
+        String uid = CheckController.getUserId(authentication);
 
         try {
-            panierService.addToPanier(idPrice , uid);
+            panierService.addToPanier(idPrice, uid);
             return ResponseEntity.ok(new ApiResponse(true, "Produit ajouté avec succès au panier"));
         } catch (ProductExistException e) {
             throw e;
         } catch (Exception e) {
-            System.out.println("Erreur"+e);
+            log.error("Erreur serveur lors de l'ajout au panier pour l'UID: {}", uid, e);
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
                     .body(new ApiError(HttpStatus.INTERNAL_SERVER_ERROR, "Erreur serveur lors de l'ajout"));
         }
     }
 
-    @Operation(summary = "Suppression d'un produit dans le panier par un utilisateur connecté")
     @DeleteMapping("/product/{id}")
-    public ResponseEntity<?> deleteProductToPanier(@PathVariable("id") String idPrice , Authentication authentication) {
+    @Operation(summary = "Suppression d'un produit dans le panier par un utilisateur connecté")
+    public ResponseEntity<?> deleteProductToPanier(@PathVariable("id") String idPrice, Authentication authentication) {
+        var errorResponse = validatePanierAccess(authentication);
+        if (errorResponse.isPresent()) return errorResponse.get();
 
-        if (authentication == null || !authentication.isAuthenticated()) {
-            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(new ApiError(HttpStatus.UNAUTHORIZED, "Utilisateur non authentifié"));
-        }
-
-        String uid = authentication.getName();
-
-        @SuppressWarnings("unchecked")
-        Map<String, Object> claims = (Map<String, Object>) authentication.getDetails();
-        if (claims == null) {
-            return ResponseEntity.status(HttpStatus.FORBIDDEN)
-                    .body(new ApiError(HttpStatus.FORBIDDEN, "Aucun détail d'authentification disponible"));
-        }
-
-        String role = (String) claims.get("role");
-        if (role == null || role.trim().isEmpty()) {
-            return ResponseEntity.status(HttpStatus.FORBIDDEN)
-                    .body(new ApiError(HttpStatus.FORBIDDEN, "Pas de Role vous devez etre connectez"));
-        }
-
+        String uid = CheckController.getUserId(authentication);
 
         try {
-            panierService.deleteProductInPanier(idPrice , uid);
+            panierService.deleteProductInPanier(idPrice, uid);
             return ResponseEntity.ok(new ApiResponse(true, "Produit supprimé avec succès du panier"));
         } catch (ProductNotFoundException e) {
             throw e;
         } catch (Exception e) {
-            System.out.println("Erreur"+e);
+            log.error("Erreur serveur lors de la suppression du produit {} du panier pour l'UID: {}", idPrice, uid, e);
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
-                    .body(new ApiError(HttpStatus.INTERNAL_SERVER_ERROR, "Erreur serveur lors de l'ajout"));
+                    .body(new ApiError(HttpStatus.INTERNAL_SERVER_ERROR, "Erreur serveur lors de la suppression"));
         }
     }
 
-    @Operation(summary = "Recuperation de la quantite du produit dans le panier (qte = 0 si n'existe pas)")
     @GetMapping("/product/getQuantityInPanier")
-    public ResponseEntity<?> getQuantityProductInPanier(@RequestParam String idPrice , Authentication authentication) {
-        if (authentication == null || !authentication.isAuthenticated()) {
-            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(new ApiError(HttpStatus.UNAUTHORIZED, "Utilisateur non authentifié"));
-        }
+    @Operation(summary = "Récupération de la quantité du produit dans le panier (qte = 0 si n'existe pas)")
+    public ResponseEntity<?> getQuantityProductInPanier(@RequestParam String idPrice, Authentication authentication) {
+        var errorResponse = validatePanierAccess(authentication);
+        if (errorResponse.isPresent()) return errorResponse.get();
 
-        String uid = authentication.getName();
-
-        @SuppressWarnings("unchecked")
-        Map<String, Object> claims = (Map<String, Object>) authentication.getDetails();
-        if (claims == null) {
-            return ResponseEntity.status(HttpStatus.FORBIDDEN)
-                    .body(new ApiError(HttpStatus.FORBIDDEN, "Aucun détail d'authentification disponible"));
-        }
-
-        String role = (String) claims.get("role");
-        if (role == null || role.trim().isEmpty()) {
-            return ResponseEntity.status(HttpStatus.FORBIDDEN)
-                    .body(new ApiError(HttpStatus.FORBIDDEN, "Pas de Role vous devez etre connectez"));
-        }
-
+        String uid = CheckController.getUserId(authentication);
 
         try {
-            int response = panierService.getQuantityProductInPanier(idPrice , uid);
+            int response = panierService.getQuantityProductInPanier(idPrice, uid);
             return ResponseEntity.ok(response);
         } catch (ProductNotFoundException e) {
             throw e;
         } catch (Exception e) {
-            System.out.println("Erreur: "+e);
+            log.error("Erreur lors de la vérification de la quantité du produit {} pour l'UID: {}", idPrice, uid, e);
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
-                    .body(new ApiError(HttpStatus.INTERNAL_SERVER_ERROR, "Erreur serveur lors de la verification de l'existance du produit dans le panier"));
+                    .body(new ApiError(HttpStatus.INTERNAL_SERVER_ERROR, "Erreur serveur lors de la vérification de la quantité"));
         }
     }
 
-    @Operation(summary = "Obtenir tous les produits du panier")
     @GetMapping("/getAllProductInPanier")
+    @Operation(summary = "Obtenir tous les produits du panier")
     public ResponseEntity<?> getAllProductInPanierByUser(Authentication authentication) {
-        if (authentication == null || !authentication.isAuthenticated()) {
-            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(new ApiError(HttpStatus.UNAUTHORIZED, "Utilisateur non authentifié"));
-        }
+        var errorResponse = validatePanierAccess(authentication);
+        if (errorResponse.isPresent()) return errorResponse.get();
 
-        String uid = authentication.getName();
-
-        @SuppressWarnings("unchecked")
-        Map<String, Object> claims = (Map<String, Object>) authentication.getDetails();
-        if (claims == null) {
-            return ResponseEntity.status(HttpStatus.FORBIDDEN)
-                    .body(new ApiError(HttpStatus.FORBIDDEN, "Aucun détail d'authentification disponible"));
-        }
-
-        String role = (String) claims.get("role");
-        if (role == null || role.trim().isEmpty()) {
-            return ResponseEntity.status(HttpStatus.FORBIDDEN)
-                    .body(new ApiError(HttpStatus.FORBIDDEN, "Pas de Role vous devez etre connectez"));
-        }
-
+        String uid = CheckController.getUserId(authentication);
 
         try {
             List<ProductPanierDTO> response = panierService.getAllProductInPanier(uid);
@@ -161,153 +103,109 @@ public class PanierController {
         } catch (ProductNotFoundException e) {
             throw e;
         } catch (Exception e) {
-            System.out.println("Erreur: "+e);
+            log.error("Erreur lors de la récupération du panier pour l'UID: {}", uid, e);
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
-                    .body(new ApiError(HttpStatus.INTERNAL_SERVER_ERROR, "Erreur serveur lors de la verification de l'existance du produit dans le panier"));
+                    .body(new ApiError(HttpStatus.INTERNAL_SERVER_ERROR, "Erreur serveur lors de la récupération du panier"));
         }
     }
 
-    @Operation(summary = "Supprimer le panier d'une quincaillerie")
     @DeleteMapping("/{id}")
-    public ResponseEntity<?> deletePanierByQuincaillerie(@PathVariable("id") String idQuincaillerie , Authentication authentication) {
+    @Operation(summary = "Supprimer le panier d'une quincaillerie")
+    public ResponseEntity<?> deletePanierByQuincaillerie(@PathVariable("id") String idQuincaillerie, Authentication authentication) {
+        var errorResponse = validatePanierAccess(authentication);
+        if (errorResponse.isPresent()) return errorResponse.get();
 
-        if (authentication == null || !authentication.isAuthenticated()) {
-            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(new ApiError(HttpStatus.UNAUTHORIZED, "Utilisateur non authentifié"));
-        }
-
-        String uid = authentication.getName();
-
-        @SuppressWarnings("unchecked")
-        Map<String, Object> claims = (Map<String, Object>) authentication.getDetails();
-        if (claims == null) {
-            return ResponseEntity.status(HttpStatus.FORBIDDEN)
-                    .body(new ApiError(HttpStatus.FORBIDDEN, "Aucun détail d'authentification disponible"));
-        }
-
-        String role = (String) claims.get("role");
-        if (role == null || role.trim().isEmpty()) {
-            return ResponseEntity.status(HttpStatus.FORBIDDEN)
-                    .body(new ApiError(HttpStatus.FORBIDDEN, "Pas de Role vous devez etre connectez"));
-        }
-
+        String uid = CheckController.getUserId(authentication);
 
         try {
-            panierService.deletePanier(idQuincaillerie , uid);
+            panierService.deletePanier(idQuincaillerie, uid);
             return ResponseEntity.ok(new ApiResponse(true, "Panier supprimé avec succès"));
         } catch (ProductNotFoundException e) {
             throw e;
         } catch (Exception e) {
-            System.out.println("Erreur"+e);
+            log.error("Erreur lors de la suppression du panier de la quincaillerie {} pour l'UID: {}", idQuincaillerie, uid, e);
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
-                    .body(new ApiError(HttpStatus.INTERNAL_SERVER_ERROR, "Erreur serveur lors de l'ajout"));
+                    .body(new ApiError(HttpStatus.INTERNAL_SERVER_ERROR, "Erreur serveur lors de la suppression du panier"));
         }
     }
 
-    @Operation(summary = "Supprimer tous les paniers d'un utilisateur")
     @DeleteMapping("/all")
+    @Operation(summary = "Supprimer tous les paniers d'un utilisateur")
     public ResponseEntity<?> deleteAllPaniersByUser(Authentication authentication) {
+        var errorResponse = validatePanierAccess(authentication);
+        if (errorResponse.isPresent()) return errorResponse.get();
 
-        if (authentication == null || !authentication.isAuthenticated()) {
-            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(new ApiError(HttpStatus.UNAUTHORIZED, "Utilisateur non authentifié"));
-        }
-
-        String uid = authentication.getName();
-
-        @SuppressWarnings("unchecked")
-        Map<String, Object> claims = (Map<String, Object>) authentication.getDetails();
-        if (claims == null) {
-            return ResponseEntity.status(HttpStatus.FORBIDDEN)
-                    .body(new ApiError(HttpStatus.FORBIDDEN, "Aucun détail d'authentification disponible"));
-        }
-
-        String role = (String) claims.get("role");
-        if (role == null || role.trim().isEmpty()) {
-            return ResponseEntity.status(HttpStatus.FORBIDDEN)
-                    .body(new ApiError(HttpStatus.FORBIDDEN, "Pas de Role vous devez etre connectez"));
-        }
-
+        String uid = CheckController.getUserId(authentication);
 
         try {
             panierService.deleteAllPaniers(uid);
-            return ResponseEntity.ok(new ApiResponse(true, "Panier supprimé avec succès"));
+            return ResponseEntity.ok(new ApiResponse(true, "Tous les paniers ont été supprimés avec succès"));
         } catch (ProductNotFoundException e) {
             throw e;
         } catch (Exception e) {
-            System.out.println("Erreur"+e);
+            log.error("Erreur lors de la suppression globale des paniers pour l'UID: {}", uid, e);
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
-                    .body(new ApiError(HttpStatus.INTERNAL_SERVER_ERROR, "Erreur serveur lors de l'ajout"));
+                    .body(new ApiError(HttpStatus.INTERNAL_SERVER_ERROR, "Erreur serveur lors de la vidange des paniers"));
         }
     }
 
+    @PostMapping("/addQuantityToPanier")
     @Operation(summary = "+1 au panier")
-    @GetMapping("/addQuantityToPanier")
-    public ResponseEntity<?> addToQuantityToPanier(@RequestParam String idPrice , Authentication authentication) {
+    public ResponseEntity<?> addToQuantityToPanier(@RequestParam String idPrice, Authentication authentication) {
+        var errorResponse = validatePanierAccess(authentication);
+        if (errorResponse.isPresent()) return errorResponse.get();
 
-        if (authentication == null || !authentication.isAuthenticated()) {
-            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(new ApiError(HttpStatus.UNAUTHORIZED, "Utilisateur non authentifié"));
-        }
-
-        String uid = authentication.getName();
-
-        @SuppressWarnings("unchecked")
-        Map<String, Object> claims = (Map<String, Object>) authentication.getDetails();
-        if (claims == null) {
-            return ResponseEntity.status(HttpStatus.FORBIDDEN)
-                    .body(new ApiError(HttpStatus.FORBIDDEN, "Aucun détail d'authentification disponible"));
-        }
-
-        String role = (String) claims.get("role");
-        if (role == null || role.trim().isEmpty()) {
-            return ResponseEntity.status(HttpStatus.FORBIDDEN)
-                    .body(new ApiError(HttpStatus.FORBIDDEN, "Pas de Role vous devez etre connectez"));
-        }
-
+        String uid = CheckController.getUserId(authentication);
 
         try {
-            panierService.addQuantityToPanier(idPrice , uid);
-            return ResponseEntity.ok(new ApiResponse(true, "+1 au panier"));
+            panierService.addQuantityToPanier(idPrice, uid);
+            return ResponseEntity.ok(new ApiResponse(true, "Quantité incrémentée (+1)"));
         } catch (ProductExistException e) {
             throw e;
         } catch (Exception e) {
-            System.out.println("Erreur"+e);
+            log.error("Erreur lors de l'incrémentation du produit {} pour l'UID: {}", idPrice, uid, e);
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
-                    .body(new ApiError(HttpStatus.INTERNAL_SERVER_ERROR, "Erreur serveur lors de l'ajout de la quantite"));
+                    .body(new ApiError(HttpStatus.INTERNAL_SERVER_ERROR, "Erreur serveur lors de la modification de la quantité"));
         }
     }
 
+    @PostMapping("/removeQuantityToPanier")
     @Operation(summary = "-1 au panier")
-    @GetMapping("/removeQuantityToPanier")
-    public ResponseEntity<?> removeToQuantityToPanier(@RequestParam String idPrice , Authentication authentication) {
+    public ResponseEntity<?> removeToQuantityToPanier(@RequestParam String idPrice, Authentication authentication) {
+        var errorResponse = validatePanierAccess(authentication);
+        if (errorResponse.isPresent()) return errorResponse.get();
 
-        if (authentication == null || !authentication.isAuthenticated()) {
-            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(new ApiError(HttpStatus.UNAUTHORIZED, "Utilisateur non authentifié"));
-        }
-
-        String uid = authentication.getName();
-
-        @SuppressWarnings("unchecked")
-        Map<String, Object> claims = (Map<String, Object>) authentication.getDetails();
-        if (claims == null) {
-            return ResponseEntity.status(HttpStatus.FORBIDDEN)
-                    .body(new ApiError(HttpStatus.FORBIDDEN, "Aucun détail d'authentification disponible"));
-        }
-
-        String role = (String) claims.get("role");
-        if (role == null || role.trim().isEmpty()) {
-            return ResponseEntity.status(HttpStatus.FORBIDDEN)
-                    .body(new ApiError(HttpStatus.FORBIDDEN, "Pas de Role vous devez etre connectez"));
-        }
-
+        String uid = CheckController.getUserId(authentication);
 
         try {
-            panierService.removeQuantityToPanier(idPrice , uid);
-            return ResponseEntity.ok(new ApiResponse(true, "-1 au panier"));
+            panierService.removeQuantityToPanier(idPrice, uid);
+            return ResponseEntity.ok(new ApiResponse(true, "Quantité décrémentée (-1)"));
         } catch (ProductExistException e) {
             throw e;
         } catch (Exception e) {
-            System.out.println("Erreur"+e);
+            log.error("Erreur lors de la décrémentation du produit {} pour l'UID: {}", idPrice, uid, e);
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
-                    .body(new ApiError(HttpStatus.INTERNAL_SERVER_ERROR, "Erreur serveur lors de la soustraction de la quantite"));
+                    .body(new ApiError(HttpStatus.INTERNAL_SERVER_ERROR, "Erreur serveur lors de la soustraction de la quantité"));
         }
+    }
+
+    // --- HELPER DE VALIDATION INTERNE ---
+
+    @SuppressWarnings("unchecked")
+    private Optional<ResponseEntity<ApiError>> validatePanierAccess(Authentication authentication) {
+        // 1. Validation de l'authentification via notre CheckController (Valable pour Client & Vendeur)
+        var basicCheck = CheckController.validateBasicAuthentication(authentication);
+        if (basicCheck.isPresent()) return basicCheck;
+
+        // 2. Validation spécifique du rôle requise pour le panier
+        Map<String, Object> claims = (Map<String, Object>) authentication.getDetails();
+        String role = (claims != null) ? (String) claims.get("role") : null;
+
+        if (role == null || role.trim().isEmpty()) {
+            return Optional.of(ResponseEntity.status(HttpStatus.FORBIDDEN)
+                    .body(new ApiError(HttpStatus.FORBIDDEN, "Accès refusé : Rôle manquant, vous devez être connecté")));
+        }
+
+        return Optional.empty();
     }
 }

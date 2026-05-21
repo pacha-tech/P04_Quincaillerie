@@ -99,7 +99,7 @@ public class LignePanierInterfaceImpl implements LignePanierCustomInterface {
 
     @Override
     public Object[] findIfproductIsInPromotion(String idPrice) {
-        String jpql = "SELECT pr , COALESCE(p.campagnePromotion.tauxRemise, 0.0) " +
+        String jpql = "SELECT pr , p.campagnePromotion, null " +
                 "FROM Price pr " +
                 "LEFT JOIN Promotion p ON p.price.idPrice = pr.idPrice " +
                 "AND p.campagnePromotion.estActif = true " +

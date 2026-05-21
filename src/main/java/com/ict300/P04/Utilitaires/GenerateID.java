@@ -183,4 +183,12 @@ public class GenerateID {
         }
         return sb.toString();
     }
+
+    public static String GenerateSystemNotificationID() {
+        StringBuilder sb = new StringBuilder("SYNO");
+        for (int i = 0; i < 6; i++) {
+            sb.append(ALPHABET.charAt(RANDOM.nextInt(ALPHABET.length())));
+        }
+        return sb.toString();
+    }
 }

@@ -12,6 +12,5 @@ public class PaiementResponseDTO {
     private boolean success;
     private String message;
     private String transactionId;
-    private String factureUrl;
-    private LocalDateTime paiementDate;
+    private String urlTransaction;
 }

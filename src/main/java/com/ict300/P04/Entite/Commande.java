@@ -21,6 +21,10 @@ public class Commande {
     @Column(name = "Statut")
     private StatutCommande statut;
 
+
+    @Column(name = "id_transaction")
+    private String  idTransaction;
+
     @Column(name = "Montant_total" , precision = 12 , scale = 2)
     private BigDecimal montantTotal;
 

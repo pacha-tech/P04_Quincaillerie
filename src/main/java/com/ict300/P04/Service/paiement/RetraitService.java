@@ -1,39 +1,25 @@
 package com.ict300.P04.Service.paiement;
 
 import com.ict300.P04.DTO.paiement.request.ValidationRetraitDTO;
-import com.ict300.P04.DTO.paiement.response.RetraitResponseDTO;
-import com.ict300.P04.Entite.Commande;
-import com.ict300.P04.Entite.DetailRetrait;
-import com.ict300.P04.Entite.DetailCommande;
-import com.ict300.P04.Entite.Quincaillerie;
-import com.ict300.P04.Entite.RetraitCode;
+import com.ict300.P04.Entite.*;
 import com.ict300.P04.Exception.*;
-import com.ict300.P04.Utilitaires.GenerateID;
-import com.ict300.P04.Utilitaires.StatutCommande;
-import com.ict300.P04.repository.interfaces.commande.CommandeInterface;
-import com.ict300.P04.repository.interfaces.detailRetrait.DetailRetraitInterface;
+import com.ict300.P04.Service.paiement.sharePayService.SharePayService;
 import com.ict300.P04.repository.interfaces.detailCommande.DetailCommandeInterface;
 import com.ict300.P04.repository.interfaces.quincaillerie.QuincaillerieInterface;
 import com.ict300.P04.repository.interfaces.retraitCode.RetraitCodeInterface;
+import com.ict300.P04.repository.interfaces.user.seller.SellerInterface;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.Instant;
-import java.time.LocalDateTime;
 
 @Service
 public class RetraitService {
 
     @Autowired
     private RetraitCodeInterface retraitCodeInterface;
-
-    @Autowired
-    private DetailRetraitInterface detailRetraitInterface;
-
-    @Autowired
-    private CommandeInterface commandeInterface;
 
     @Autowired
     private DetailCommandeInterface detailCommandeInterface;
@@ -44,11 +30,22 @@ public class RetraitService {
     @Autowired
     private QuincaillerieInterface quincaillerieInterface;
 
+    @Autowired
+    private SharePayService sharePayService;
+
+    @Autowired
+    private SellerInterface sellerInterface;
+
+    @Autowired
+    private RedixService redixService;
+
     @Transactional(noRollbackFor = {InvalidOtpCodeException.class, MaxAttemptsExceededException.class})
-    public void validerRetrait(ValidationRetraitDTO requestBody, String ipVendeur, String userAgentVendeur, String quincaillerieId) {
+    public void validerRetrait(ValidationRetraitDTO requestBody, String ipVendeur, String userAgentVendeur, String quincaillerieId, String uid) {
 
         Quincaillerie quincaillerie = quincaillerieInterface.findById(quincaillerieId)
                 .orElseThrow(() -> new ResourceNotFoundException("La quincaillerie n'existe pas"));
+
+        User user = sellerInterface.findById(uid).orElseThrow(() -> new UserNotFoundException("L'utilisateur n'existe pas pour cette quincaillerie"));
 
         RetraitCode retraitCode = retraitCodeInterface.findByCommandeId(requestBody.getIdCommande())
                 .orElseThrow(() -> new OtpCodeNotFoundException("Aucun code de retrait trouvé pour cette commande"));
@@ -84,23 +81,12 @@ public class RetraitService {
             }
         }
 
-
-        commande.setStatut(StatutCommande.LIVREE);
-        commandeInterface.save(commande);
-
-
-        detailCommande.setDateRetrait(LocalDateTime.now());
-        detailCommandeInterface.save(detailCommande);
-
-
-        DetailRetrait preuve = new DetailRetrait();
-        preuve.setIdDetailRetrait(GenerateID.GenerateDetailRetraitID());
-        preuve.setCommande(commande);
-        preuve.setIpVendeur(ipVendeur);
-        preuve.setUserAgentVendeur(userAgentVendeur);
-        detailRetraitInterface.save(preuve);
+        redixService.saveContext(commande.getIdCommande(), ipVendeur, userAgentVendeur);
 
         retraitCode.setValid(false);
         retraitCodeInterface.save(retraitCode);
+
+        sharePayService.transfererFondsAuVendeur(user.getPhone() , user.getName() , commande.getMontantTotal().doubleValue() , commande.getIdCommande() , user.getEmail());
+
     }
 }

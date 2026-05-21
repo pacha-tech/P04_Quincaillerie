@@ -1,5 +1,6 @@
 package com.ict300.P04.Controller.products;
 
+import com.ict300.P04.Controller.CheckController;
 import com.ict300.P04.DTO.product.request.AddProductDTO;
 import com.ict300.P04.DTO.product.request.UpdateProductDTO;
 import com.ict300.P04.DTO.product.response.ProductStockDTO;
@@ -21,7 +22,6 @@ import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 import java.util.List;
-import java.util.Map;
 
 @Slf4j
 @RestController
@@ -33,20 +33,23 @@ public class ProductController {
     private final ProductService productService;
     private final RecommandationService recommandationService;
 
-    // --- RECHERCHE ET CONSULTATION ---
 
     @Operation(summary = "Rechercher des produits par nom")
     @GetMapping("/search")
-    public ResponseEntity<List<SearchProductDTO>> search(@RequestParam String name) {
-        log.info("Recherche de produits avec le nom: {}", name);
-        List<SearchProductDTO> results = productService.SearchProductByName(name);
+    public ResponseEntity<List<SearchProductDTO>> search(@RequestParam String name,
+                                                         @RequestParam(required = false) Double latitude,
+                                                         @RequestParam(required = false) Double longitude,
+                                                         @RequestParam(required = false, defaultValue = "1km") String scope) {
+
+        log.info("Recherche de produits - Nom: {}, Lat: {}, Lng: {}, Scope: {}", name, latitude, longitude, scope);
+        List<SearchProductDTO> results = productService.SearchProductByName(name, longitude, latitude, scope);
         return ResponseEntity.ok(results);
     }
 
-    @Operation(summary = "Recuperer un produit par son idPrice")
+    @Operation(summary = "Récupérer un produit par son idPrice")
     @GetMapping("/getProduct/{idPrice}")
     public ResponseEntity<SearchProductDTO> getProductSearchById(@PathVariable("idPrice") String idPrice) {
-        log.info("Recuperation du produits avec l'id: {}", idPrice);
+        log.info("Récupération du produit avec l'id: {}", idPrice);
         SearchProductDTO results = productService.getProductById(idPrice);
         return ResponseEntity.ok(results);
     }
@@ -54,11 +57,12 @@ public class ProductController {
     @Operation(summary = "Récupérer le stock complet de la quincaillerie")
     @GetMapping("/getStock")
     public ResponseEntity<?> getProductByQuincaillerie(Authentication authentication) {
-        String qId = getQuincaillerieId(authentication);
-        if (qId == null) return buildUnauthorizedResponse();
+        var errorResponse = CheckController.validateQuincaillerieAuthentication(authentication);
+        if (errorResponse.isPresent()) return errorResponse.get();
+
+        String qId = CheckController.getQuincaillerieId(authentication);
         List<ProductStockDTO> stock = productService.getStock(qId);
         return ResponseEntity.ok(stock);
-
     }
 
     @Operation(summary = "Suggestions pour l'auto-complétion")
@@ -73,16 +77,19 @@ public class ProductController {
         return ResponseEntity.ok(recommandationService.getRecommendations(idProduct, idQuincaillerie));
     }
 
-    // --- OPÉRATIONS DE GESTION (CRUD) ---
 
     @Operation(summary = "Ajouter un nouveau produit avec image")
     @PostMapping(value = "/addProduct", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
-    public ResponseEntity<?> addProduct(@RequestPart("data") @Valid AddProductDTO addProductDTO, @RequestPart(value = "image", required = false) MultipartFile image, Authentication authentication) {
+    public ResponseEntity<?> addProduct(@RequestPart("data") @Valid AddProductDTO addProductDTO,
+                                        @RequestPart(value = "image", required = false) MultipartFile image,
+                                        Authentication authentication) {
 
-        String qId = getQuincaillerieId(authentication);
-        if (qId == null) return buildUnauthorizedResponse();
+        var errorResponse = CheckController.validateQuincaillerieAuthentication(authentication);
+        if (errorResponse.isPresent()) return errorResponse.get();
 
-        String uid = authentication.getName();
+        String qId = CheckController.getQuincaillerieId(authentication);
+        String uid = CheckController.getUserId(authentication);
+
         log.info("Tentative d'ajout produit: {} par UID: {} (Image: {})", addProductDTO.getName(), uid, (image != null));
 
         try {
@@ -92,18 +99,24 @@ public class ProductController {
             throw e;
         } catch (Exception e) {
             log.error("Erreur serveur lors de l'ajout du produit", e);
-            return buildErrorResponse(HttpStatus.INTERNAL_SERVER_ERROR, "Erreur serveur lors de l'ajout");
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body(new ApiError(HttpStatus.INTERNAL_SERVER_ERROR, "Erreur serveur lors de l'ajout"));
         }
     }
 
     @Operation(summary = "Mise à jour d'un produit existant (Données + Image)")
     @PatchMapping(value = "/{id}", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
-    public ResponseEntity<?> updateProduct(@PathVariable("id") String productId, @RequestPart("data") @Valid UpdateProductDTO updateProductDTO, @RequestPart(value = "image", required = false) MultipartFile image, Authentication authentication) {
+    public ResponseEntity<?> updateProduct(@PathVariable("id") String productId,
+                                           @RequestPart("data") @Valid UpdateProductDTO updateProductDTO,
+                                           @RequestPart(value = "image", required = false) MultipartFile image,
+                                           Authentication authentication) {
 
-        String qId = getQuincaillerieId(authentication);
-        if (qId == null) return buildUnauthorizedResponse();
+        var errorResponse = CheckController.validateQuincaillerieAuthentication(authentication);
+        if (errorResponse.isPresent()) return errorResponse.get();
 
-        log.info("Mise à jour produit ID: {} par UID: {} (Image: {})", productId, authentication.getName(), (image != null));
+        String qId = CheckController.getQuincaillerieId(authentication);
+
+        log.info("Mise à jour produit ID: {} par UID: {} (Image: {})", productId, CheckController.getUserId(authentication), (image != null));
 
         try {
             productService.updateProduct(productId, updateProductDTO, image, qId);
@@ -112,7 +125,8 @@ public class ProductController {
             throw e;
         } catch (Exception e) {
             log.error("Erreur lors de la mise à jour du produit {}", productId, e);
-            return buildErrorResponse(HttpStatus.INTERNAL_SERVER_ERROR, "Erreur serveur lors de la mise à jour");
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body(new ApiError(HttpStatus.INTERNAL_SERVER_ERROR, "Erreur serveur lors de la mise à jour"));
         }
     }
 
@@ -120,10 +134,12 @@ public class ProductController {
     @DeleteMapping("/{id}")
     public ResponseEntity<?> deleteProduct(@PathVariable("id") String idProduct, Authentication authentication) {
 
-        String qId = getQuincaillerieId(authentication);
-        if (qId == null) return buildUnauthorizedResponse();
+        var errorResponse = CheckController.validateQuincaillerieAuthentication(authentication);
+        if (errorResponse.isPresent()) return errorResponse.get();
 
-        log.info("Suppression du produit ID: {} demandée par UID: {}", idProduct, authentication.getName());
+        String qId = CheckController.getQuincaillerieId(authentication);
+
+        log.info("Suppression du produit ID: {} demandée par UID: {}", idProduct, CheckController.getUserId(authentication));
 
         try {
             productService.deleteProduct(idProduct, qId);
@@ -132,27 +148,8 @@ public class ProductController {
             throw e;
         } catch (Exception e) {
             log.error("Erreur lors de la suppression du produit {}", idProduct, e);
-            return buildErrorResponse(HttpStatus.INTERNAL_SERVER_ERROR, "Erreur serveur lors de la suppression");
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body(new ApiError(HttpStatus.INTERNAL_SERVER_ERROR, "Erreur serveur lors de la suppression"));
         }
-    }
-
-
-
-    private String getQuincaillerieId(Authentication authentication) {
-        if (authentication == null || !authentication.isAuthenticated()) return null;
-
-        Map<String, Object> claims = (Map<String, Object>) authentication.getDetails();
-        if (claims == null) return null;
-
-        return (String) claims.get("quincaillerieId");
-    }
-
-    private ResponseEntity<?> buildUnauthorizedResponse() {
-        return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
-                .body(new ApiError(HttpStatus.UNAUTHORIZED, "Accès non autorisé ou claims manquants"));
-    }
-
-    private ResponseEntity<?> buildErrorResponse(HttpStatus status, String message) {
-        return ResponseEntity.status(status).body(new ApiError(status, message));
     }
 }
