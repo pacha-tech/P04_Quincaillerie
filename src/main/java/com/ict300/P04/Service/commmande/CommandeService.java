@@ -3,6 +3,7 @@ package com.ict300.P04.Service.commmande;
 import com.ict300.P04.DTO.commande.response.CommandeDetailDTO;
 import com.ict300.P04.DTO.commande.response.CommandeResponseDTO;
 import com.ict300.P04.DTO.commande.response.getCommandeDTO;
+import com.ict300.P04.DTO.notification.SystemNotificationDTO;
 import com.ict300.P04.DTO.paiement.redix.VendeurContextDTO;
 import com.ict300.P04.Entite.*;
 import com.ict300.P04.Exception.*;
@@ -338,7 +339,7 @@ public class CommandeService {
         commandeInterface.save(commande);
     }
 
-    @Transactional
+     @Transactional
     public void confirmerPaiement(String idTransaction, String method) {
         Commande commande = commandeInterface.getCommandeByIdTransaction(idTransaction)
                 .orElseThrow(() -> new ResourceNotFoundException("L'id de la transaction n'existe pas"));
@@ -363,7 +364,7 @@ public class CommandeService {
 
         List<Stock> stocks = new ArrayList<>();
         List<Price> prices = new ArrayList<>();
-        List<Price> alert = new ArrayList<>();
+        List<SystemNotification> notificationsToSave = new ArrayList<>();
 
 
         for (LigneCommande lc : ligneCommandes) {
@@ -389,7 +390,17 @@ public class CommandeService {
             price.setStock(price.getStock() - lc.getQuantity());
 
             if(price.getStock() <= price.getStockSeuil()){
-                alert.add(price);
+
+                SystemNotification systemNotification = new SystemNotification();
+
+                systemNotification.setIdSystemNotification(GenerateID.GenerateSystemNotificationID());
+                systemNotification.setType(NotificationType.STOCK_BAS);
+                systemNotification.setMessage(String.format("Stock bas pour '%s' (%d %s restant)", price.getProduct().getName(), price.getStock(), price.getProduct().getUnit()));
+                systemNotification.setQuincaillerie(commande.getQuincaillerie());
+                systemNotification.setTargetId(price.getIdPrice());
+                systemNotification.setIsRead(false);
+
+                notificationsToSave.add(systemNotification);
             }
 
             prices.add(price);
@@ -399,18 +410,23 @@ public class CommandeService {
         stockInterface.saveAll(stocks);
         priceInterface.saveAll(prices);
 
-        if(!alert.isEmpty()){
-            SystemNotification systemNotification = new SystemNotification();
-            systemNotification.setIdSystemNotification(GenerateID.GenerateSystemNotificationID());
-            systemNotification.setType(NotificationType.STOCK_BAS);
-            systemNotification.setMessage("Le stock est bas");
-            systemNotification.setQuincaillerie(commande.getQuincaillerie());
-            systemNotification.setIsRead(false);
+        if(!notificationsToSave.isEmpty()){
+            systemNotificationInterface.saveAll(notificationsToSave);
 
-            systemNotificationInterface.save(systemNotification);
+            List<SystemNotificationDTO> notificationDTOs = notificationsToSave.stream()
+                    .map(notification -> new SystemNotificationDTO(
+                            notification.getIdSystemNotification(),
+                            notification.getMessage(),
+                            notification.getType(),
+                            notification.getTargetId(),
+                            notification.getIsRead(),
+                            notification.getCreatedAt()
+                    )).toList();
 
-            notificationService.broadcastStockAlerts( commande.getQuincaillerie().getIdQuincaillerie() , alert);
+
+            notificationService.broadcastNotifications(commande.getQuincaillerie().getIdQuincaillerie(), notificationDTOs);
         }
+
 
         BigDecimal tauxTva = new BigDecimal("0.1925");
         BigDecimal diviseurTtc = new BigDecimal("1.1925");
@@ -433,7 +449,7 @@ public class CommandeService {
 
         facture = factureInterface.save(facture);
 
-        facturationAsyncService.processFactureAndEmail(commande , facture , idTransaction , method);
+        facturationAsyncService.processFactureAndEmail(commande.getIdCommande() , facture.getIdFacture() , idTransaction , method);
     }
 
     @Transactional

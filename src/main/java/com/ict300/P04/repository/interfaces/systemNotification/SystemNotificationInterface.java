@@ -8,5 +8,5 @@ import java.util.List;
 @Repository
 public interface SystemNotificationInterface extends JpaRepository<SystemNotification , String> , SystemNotificationCustomInterface {
     List<SystemNotification> findByUser_IdUserOrderByCreatedAtDesc(String userId);
-    List<SystemNotification> findByQuincaillerie_IdQuincaillerieOrderByCreatedAtDesc(String quincaillerieId);
+    List<SystemNotification> findByQuincaillerieIdQuincaillerieOrderByCreatedAtDesc(String quincaillerieId);
 }

@@ -67,7 +67,7 @@ public class FactureService {
             cellFournisseur.addElement(new Paragraph(nomStore.toUpperCase(), fontHeader));
             cellFournisseur.addElement(new Paragraph("NIU : M000000000000X", fontNormalGris)); // À remplacer par les vraies infos
             cellFournisseur.addElement(new Paragraph("RCCM : RC/YAO/202X/B/000", fontNormalGris));
-            cellFournisseur.addElement(new Paragraph("Adresse : Douala/Yaoundé, Cameroun", fontNormalGris));
+            cellFournisseur.addElement(new Paragraph("Adresse : Yaoundé, Cameroun", fontNormalGris));
             headerTable.addCell(cellFournisseur);
 
             // Info Facture (Droite)
@@ -156,32 +156,14 @@ public class FactureService {
 
             // 7. UPLOAD CLOUDINARY
             byte[] pdfBytes = baos.toByteArray();
-            String urlCloudinary = uploadImage.uploadPdfSafely(pdfBytes, fileName);
 
-            // 8. ENREGISTREMENT DANS LA BASE DE DONNÉES
-            Facture facture = new Facture();
-            facture.setIdFacture(GenerateID.GenerateFactureID());
-            facture.setDateFacturation(LocalDateTime.now());
-
-            // On sauvegarde maintenant les vraies valeurs fiscales calculées
-            facture.setTotalHT(totalHT);
-            facture.setTotalTVA(totalTVA);
-            facture.setTotalTTC(totalTTC);
-
-            facture.setModePaiement(modePaiement);
-            facture.setUrlFacture(urlCloudinary);
-            facture.setCommande(commande);
-
-            factureInterface.save(facture);
-
-            return urlCloudinary;
+            return uploadImage.uploadPdfSafely(pdfBytes, fileName);
 
         } catch (Exception e) {
             throw new RuntimeException("Erreur lors de la génération de la facture PDF: " + e.getMessage());
         }
     }
 
-    // --- Méthodes utilitaires pour styliser les cellules du PDF ---
 
     private PdfPCell createCell(String text, Font font, int alignment) {
         PdfPCell cell = new PdfPCell(new Phrase(text, font));

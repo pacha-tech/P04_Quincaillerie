@@ -21,10 +21,6 @@ public class Commande {
     @Column(name = "Statut")
     private StatutCommande statut;
 
-
-    @Column(name = "id_transaction")
-    private String  idTransaction;
-
     @Column(name = "Montant_total" , precision = 12 , scale = 2)
     private BigDecimal montantTotal;
 
@@ -50,4 +46,7 @@ public class Commande {
 
     @OneToMany(mappedBy = "commande")
     private List<LigneCommande> ligneCommandes = new ArrayList<>();
+
+    @OneToMany(mappedBy = "commande")
+    private List<TransactionPaiement> transactionPaiements = new ArrayList<>();
 }

@@ -95,4 +95,7 @@ public class Quincaillerie {
     @OneToMany(mappedBy = "quincaillerie")
     @EqualsAndHashCode.Exclude
     private List<Commande> commandes = new ArrayList<>();
+
+    @OneToOne(mappedBy = "quincaillerie")
+    private ComptePaiementVendeur comptePaiementVendeur;
 }

@@ -1,10 +1,13 @@
 package com.ict300.P04.Controller.paiement;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.ict300.P04.DTO.paiement.aangaraPay.response.WebhookPayloadResponse;
 import com.ict300.P04.DTO.paiement.response.PaiementResponseDTO;
 import com.ict300.P04.Exception.ApiError;
 import com.ict300.P04.Service.paiement.PaiementService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
+import jakarta.mail.MessagingException;
 import jakarta.servlet.http.HttpServletRequest;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -35,7 +38,8 @@ public class PaiementController {
 
     @Operation(summary = "Paiement d'une commande par un client connecté")
     @PostMapping("/pay/{id}")
-    public ResponseEntity<?> simulatePayment(@PathVariable("id") String idCommande, Authentication authentication) {
+    public ResponseEntity<?> simulatePayment(@PathVariable("id") String idCommande, @RequestParam("phoneNumber") String phoneNumber,
+                                             @RequestParam("operator") String operator , Authentication authentication) {
 
         if (authentication == null || !authentication.isAuthenticated()) {
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
@@ -57,14 +61,16 @@ public class PaiementController {
                     .body(new ApiError(HttpStatus.FORBIDDEN, "Pas de Role vous devez être connecté"));
         }
 
-        PaiementResponseDTO responseDTO = paymentService.processPayment(idCommande, uid);
+        PaiementResponseDTO responseDTO = paymentService.processPayment(idCommande, uid , operator , phoneNumber);
         return ResponseEntity.ok(responseDTO);
     }
 
+    /*
+    //API de SharePay qui utilise le webhook secret
     @PostMapping("/webhook")
-    public ResponseEntity<String> handleWebhook(
-            @RequestHeader(value = "X-Sharepay-Signature", required = false) String signature,
+    public ResponseEntity<String> handleWebhook(@RequestHeader(value = "X-Sharepay-Signature", required = false) String signature,
             @RequestBody byte[] rawBody) {
+
 
         if (signature == null || !isValidSignature(rawBody, signature)) {
             log.warn("Appel webhook rejeté : signature invalide ou absente.");
@@ -122,5 +128,25 @@ public class PaiementController {
             log.error("Erreur technique de validation de la signature : {}", e.getMessage());
             return false;
         }
+    }
+     */
+    @PostMapping("/webhook")
+    public ResponseEntity<String> recevoirNotificationPaiement(@RequestBody WebhookPayloadResponse payload) throws MessagingException, JsonProcessingException {
+
+        System.out.println("\n============= [WEBHOOK REÇU] =============");
+        System.out.println("ID Transaction local : " + payload.getTransaction_id());
+        System.out.println("PayToken reçu        : " + payload.getPaytoken());
+        System.out.println("Statut annoncé       : " + payload.getStatus());
+        System.out.println("==========================================\n");
+
+
+        if (payload.getPaytoken() == null || payload.getPaytoken().isEmpty()) {
+            System.out.println("❌ Webhook ignoré : payToken manquant.");
+            return ResponseEntity.badRequest().body("payToken manquant");
+        }
+
+        paymentService.handleWebhook(payload);
+
+        return ResponseEntity.ok("Webhook traité et vérifié avec succès");
     }
 }

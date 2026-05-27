@@ -21,6 +21,9 @@ public class SystemNotification {
     @Column(name = "Type", nullable = false, length = 30)
     private NotificationType type;
 
+    @Column(name = "Target_id")
+    private String targetId;
+
     @Column(name = "Is_read", nullable = false)
     private Boolean isRead = false;
 

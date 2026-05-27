@@ -1,12 +1,24 @@
 package com.ict300.P04.Exception;
 
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
+import org.springframework.web.context.request.async.AsyncRequestNotUsableException;
+
+import java.io.IOException;
 
 @RestControllerAdvice
+@Slf4j
 public class GlobalExceptionHandler {
+
+    @ExceptionHandler({AsyncRequestNotUsableException.class, IOException.class})
+    public void handleAsyncDisconnectException(Exception ex) {
+        if (log.isDebugEnabled()) {
+            log.debug("Un client SSE/Asynchrone s'est déconnecté proprement : {}", ex.getMessage());
+        }
+    }
 
     @ExceptionHandler(UserAlreadyExistsException.class)
     public ResponseEntity<ApiError> handleUserExists(UserAlreadyExistsException ex) {

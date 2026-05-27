@@ -121,11 +121,11 @@ public class SharePayService {
 
             String errorMsg = envelope != null ? envelope.getMessage() : "Réponse vide";
             log.error("SharePay a refusé la demande de transfert. Raison : {}", errorMsg);
-            return;
+            throw new PaymentGatewayException("Le transfert a échoué suite à un problème technique. Veuillez réessayer plus tard.");
 
         } catch (Exception e) {
             log.error("Erreur critique lors du transfert Pay-Out vers le vendeur : {}", e.getMessage());
-            throw new PaymentGatewayException("Échec technique du virement sortant via SharePay : " + e.getMessage());
+            throw new PaymentGatewayException("Impossible de joindre le service de paiement.");
         }
     }
 

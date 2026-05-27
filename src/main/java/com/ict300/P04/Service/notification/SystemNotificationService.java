@@ -1,7 +1,12 @@
 package com.ict300.P04.Service.notification;
 
+import com.ict300.P04.DTO.notification.SystemNotificationDTO;
 import com.ict300.P04.Entite.Price;
+import com.ict300.P04.Entite.SystemNotification;
+import com.ict300.P04.repository.interfaces.systemNotification.SystemNotificationInterface;
+import jakarta.transaction.Transactional;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.MediaType;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
@@ -15,6 +20,9 @@ import java.util.concurrent.CopyOnWriteArrayList;
 @Slf4j
 @Service
 public class SystemNotificationService {
+
+    @Autowired
+    private SystemNotificationInterface systemNotificationInterface;
 
     private final Map<String, List<SseEmitter>> vendeursEmitters = new ConcurrentHashMap<>();
 
@@ -52,32 +60,23 @@ public class SystemNotificationService {
         return emitter;
     }
 
-    public void broadcastStockAlerts(String idQuincaillerie, List<Price> produitsEnAlerte) {
+    public void broadcastNotifications(String idQuincaillerie, List<SystemNotificationDTO> notifications) {
         List<SseEmitter> emitters = vendeursEmitters.getOrDefault(idQuincaillerie, Collections.emptyList());
+
         if (emitters.isEmpty()) {
             log.debug("Aucun vendeur connecté en SSE pour la quincaillerie : {}", idQuincaillerie);
             return;
         }
 
-        List<Map<String, Object>> alerts = new ArrayList<>();
-        for (Price p : produitsEnAlerte) {
-            Map<String, Object> alert = new HashMap<>();
-            alert.put("id", p.getIdPrice());
-            alert.put("name", p.getProduct().getName());
-            alert.put("Quantite", p.getStock());
-            alert.put("unite", p.getProduct().getUnit());
-            alerts.add(alert);
-        }
-
-        log.info("Envoi de {} alerte(s) de stock à la quincaillerie : {}", alerts.size(), idQuincaillerie);
+        log.info("Envoi de {} notification(s) en temps réel à la quincaillerie : {}", notifications.size(), idQuincaillerie);
 
         for (SseEmitter emitter : emitters) {
             try {
                 emitter.send(SseEmitter.event()
-                        .name("stock-alerte-multiple")
-                        .data(alerts, MediaType.APPLICATION_JSON));
+                        .name("nouvelles-notifications") // ⚠️ On change le nom de l'événement pour être générique
+                        .data(notifications, MediaType.APPLICATION_JSON));
             } catch (IOException e) {
-                log.warn("Échec de l'envoi de l'alerte, fermeture forcée de l'émetteur.");
+                log.warn("Échec de l'envoi de la notification, fermeture forcée de l'émetteur.");
                 emitter.complete();
             }
         }
@@ -85,6 +84,7 @@ public class SystemNotificationService {
 
     @Scheduled(fixedRate = 15000)
     public void sendHeartbeat() {
+
         vendeursEmitters.forEach((vendeurId, emitters) -> {
             emitters.removeIf(emitter -> {
                 try {
@@ -94,12 +94,28 @@ public class SystemNotificationService {
                     return false;
                 } catch (Exception e) {
                     log.debug("Le heartbeat a échoué, suppression d'un émetteur pour {}", vendeurId);
-                    emitter.complete();
-                    return true;
                 }
+                return true;
             });
         });
 
         vendeursEmitters.entrySet().removeIf(entry -> entry.getValue().isEmpty());
+    }
+
+    public List<SystemNotificationDTO> getNotificationHistory(String idQuincaillerie) {
+        return systemNotificationInterface.findByQuincaillerieIdQuincaillerieOrderByCreatedAtDesc(idQuincaillerie)
+                .stream().map(notification -> new SystemNotificationDTO(
+                        notification.getIdSystemNotification(),
+                        notification.getMessage(),
+                        notification.getType(),
+                        notification.getTargetId(),
+                        notification.getIsRead(),
+                        notification.getCreatedAt()
+                )).toList();
+    }
+
+    @Transactional
+    public void markAllNotificationsAsRead(String idQuincaillerie) {
+        systemNotificationInterface.markAllAsRead(idQuincaillerie);
     }
 }
