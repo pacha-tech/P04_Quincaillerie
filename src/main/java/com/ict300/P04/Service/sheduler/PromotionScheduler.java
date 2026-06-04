@@ -1,9 +1,8 @@
-package com.ict300.P04.Service.promotion;
+package com.ict300.P04.Service.sheduler;
 
 import com.ict300.P04.Entite.CampagnePromotion;
 import com.ict300.P04.repository.interfaces.campagnePromotion.CampagnePromotionInterface;
 import jakarta.annotation.PostConstruct; // Import pour le démarrage
-import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.scheduling.annotation.Scheduled;

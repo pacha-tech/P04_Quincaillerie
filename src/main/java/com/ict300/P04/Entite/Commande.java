@@ -49,4 +49,7 @@ public class Commande {
 
     @OneToMany(mappedBy = "commande")
     private List<TransactionPaiement> transactionPaiements = new ArrayList<>();
+
+    @OneToMany(mappedBy = "commande")
+    private List<TransactionVersement> transactionVersements = new ArrayList<>();
 }

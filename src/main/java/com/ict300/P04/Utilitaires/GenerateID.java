@@ -192,6 +192,14 @@ public class GenerateID {
         return sb.toString();
     }
 
+    public static String GenerateInfoPaiementID() {
+        StringBuilder sb = new StringBuilder("INPA");
+        for (int i = 0; i < 6; i++) {
+            sb.append(ALPHABET.charAt(RANDOM.nextInt(ALPHABET.length())));
+        }
+        return sb.toString();
+    }
+
     public static String GenerateTransactionID() {
         StringBuilder sb = new StringBuilder("TRANS-");
         for (int i = 0; i < 5; i++) {
@@ -202,6 +210,14 @@ public class GenerateID {
 
     public static String GenerateTransactionPaiementID() {
         StringBuilder sb = new StringBuilder("TRAPA");
+        for (int i = 0; i < 5; i++) {
+            sb.append(ALPHABET.charAt(RANDOM.nextInt(ALPHABET.length())));
+        }
+        return sb.toString();
+    }
+
+    public static String GenerateTransactionVersementID() {
+        StringBuilder sb = new StringBuilder("TRAVE");
         for (int i = 0; i < 5; i++) {
             sb.append(ALPHABET.charAt(RANDOM.nextInt(ALPHABET.length())));
         }

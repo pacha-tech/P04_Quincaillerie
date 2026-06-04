@@ -1,20 +1,27 @@
 package com.ict300.P04.Service.paiement.aangaraPayService;
 
 import com.ict300.P04.DTO.paiement.aangaraPay.request.RedirectPaymentRequest;
+import com.ict300.P04.DTO.paiement.aangaraPay.request.WithdrawalRequest;
 import com.ict300.P04.DTO.paiement.aangaraPay.response.PaymentData;
 import com.ict300.P04.DTO.paiement.aangaraPay.response.PaymentInitiatedResponse;
+import com.ict300.P04.DTO.paiement.aangaraPay.response.WithdrawalResponse;
 import com.ict300.P04.DTO.paiement.sharePay.requete.SharePayTransferRequestDTO;
 import com.ict300.P04.DTO.paiement.sharePay.response.SharePayResponseEnvelope;
 import com.ict300.P04.DTO.paiement.sharePay.response.SharePayTransferResponseDTO;
+import com.ict300.P04.Entite.ComptePaiementVendeur;
 import com.ict300.P04.Exception.PaymentGatewayException;
+import com.ict300.P04.Exception.QuincaillerieNotFoundException;
+import com.ict300.P04.Exception.ResourceNotFoundException;
 import com.ict300.P04.Utilitaires.GenerateID;
 import com.ict300.P04.Utilitaires.StatutPaiement;
+import com.ict300.P04.repository.interfaces.ComptePaiementVendeur.ComptePaiementVendeurInterface;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.core.ParameterizedTypeReference;
 import org.springframework.http.*;
 import org.springframework.stereotype.Service;
+import org.springframework.web.client.RestClientException;
 import org.springframework.web.client.RestTemplate;
 
 import java.math.BigDecimal;
@@ -26,6 +33,9 @@ import java.util.Map;
 public class AangaraPayService {
     @Autowired
     private RestTemplate restTemplate;
+
+    @Autowired
+    private ComptePaiementVendeurInterface comptePaiementVendeurInterface;
 
     @Value("${aangara.api_key}")
     private String apiKey;
@@ -92,55 +102,58 @@ public class AangaraPayService {
     }
 
 
-    public void transfererFondsAuVendeur(String telephoneVendeur, String nomVendeur, double montant, String idCommande , String emailVendeur) {
-        String url = baseUrl + "/api/v1/pay-out/transfer";
+    public WithdrawalResponse transfererFondsAuVendeur(String idQuincaillerie , String amount) {
+        String url = baseUrl + "/api/v1/aangaraa-pay/withdrawal";
 
+        ComptePaiementVendeur comptePaiementVendeur = comptePaiementVendeurInterface.getCompteByQuincaillerie(idQuincaillerie)
+                .orElseThrow(() -> new ResourceNotFoundException("Cette quincaillerie n'a pas de compte"));
 
-        String provider = detecterProviderMobileMoney(telephoneVendeur);
+        String operateurBaseDeDonnees = comptePaiementVendeur.getOperateur();
+        String operateurAPI;
 
+        if ("ORANGE_MONEY_CM".equalsIgnoreCase(operateurBaseDeDonnees)) {
+            operateurAPI = "Orange_Cameroon";
+        } else if ("MTN".equalsIgnoreCase(operateurBaseDeDonnees)) {
+            operateurAPI = "MTN_Cameroon";
+        } else {
+            throw new IllegalArgumentException("Opérateur non reconnu pour le retrait : " + operateurBaseDeDonnees);
+        }
 
-        SharePayTransferRequestDTO requestBody = new SharePayTransferRequestDTO(
-                (int) montant,
-                "XAF",
-                provider,
-                telephoneVendeur,
-                nomVendeur,
-                idCommande,
-                "Virement Brixel - Fin de commande #" + idCommande,
-                emailVendeur
-        );
+        WithdrawalRequest withdrawalRequest = new WithdrawalRequest();
+        withdrawalRequest.setApp_key(apiKey);
+        withdrawalRequest.setPhone_number(comptePaiementVendeur.getNumeroTelephone());
+        withdrawalRequest.setAmount(amount);
+        withdrawalRequest.setPayment_method(operateurAPI);
+        withdrawalRequest.setUsername(comptePaiementVendeur.getNomCompte());
 
         HttpHeaders headers = new HttpHeaders();
-        headers.set("X-API-KEY", apiKey);
         headers.setContentType(MediaType.APPLICATION_JSON);
-        HttpEntity<SharePayTransferRequestDTO> entity = new HttpEntity<>(requestBody, headers);
+
+        HttpEntity<WithdrawalRequest> requestHttpEntity = new HttpEntity<>(withdrawalRequest , headers);
 
         try {
-            log.info("SharePay - Lancement du Pay-Out de {} XAF vers le compte {}", montant, telephoneVendeur);
+            ResponseEntity<WithdrawalResponse> response = restTemplate.postForEntity(url , requestHttpEntity , WithdrawalResponse.class);
 
+            if(response.getStatusCode().is2xxSuccessful() && response.getBody() != null) {
+                WithdrawalResponse responseBody = response.getBody();
+                int statusCode = responseBody.getStatusCode();
 
-            ResponseEntity<SharePayResponseEnvelope<SharePayTransferResponseDTO>> response = restTemplate.exchange(
-                    url, HttpMethod.POST, entity,
-                    new ParameterizedTypeReference<>() {
-                    }
-            );
-
-            SharePayResponseEnvelope<SharePayTransferResponseDTO> envelope = response.getBody();
-
-            if (envelope != null && envelope.isSuccess()) {
-                log.info("Pay-Out initié avec succès pour la commande #{}. Référence : {}",
-                        idCommande, envelope.getData().getReference());
-                return;
+                if(statusCode == 200 || statusCode == 201) {
+                    log.info("✅ Retrait réussi pour la quincaillerie {} ! Montant: {}. Transaction ID: {}", idQuincaillerie, amount, responseBody.getData().getTransaction_id());
+                    return responseBody;
+                }else {
+                    log.warn("⚠️ Retrait initié mais non réussi immédiatement. Statut: {}",
+                            responseBody.getData() != null ? responseBody.getData().getStatus() : "INCONNU");
+                    throw new RuntimeException("Le transfert vers le vendeur a échoué. Statut : " +
+                            (responseBody.getData() != null ? responseBody.getData().getStatus() : "INCONNU"));
+                }
             }
-
-            String errorMsg = envelope != null ? envelope.getMessage() : "Réponse vide";
-            log.error("SharePay a refusé la demande de transfert. Raison : {}", errorMsg);
-            throw new PaymentGatewayException("Le transfert a échoué suite à un problème technique. Veuillez réessayer plus tard.");
-
-        } catch (Exception e) {
-            log.error("Erreur critique lors du transfert Pay-Out vers le vendeur : {}", e.getMessage());
-            throw new PaymentGatewayException("Impossible de joindre le service de paiement.");
+        }catch (Exception e) {
+            log.error("❌ Erreur de communication avec AangaraaPay : {}", e.getMessage());
+            log.error(String.valueOf(e));
+            throw new PaymentGatewayException("Impossible d'effectuer le transfert des fonds vers le vendeur.");
         }
+        throw new PaymentGatewayException("Erreur inattendu lors du transfert");
     }
 
     public Map<String, String> initierPaiementDirect(String idCommande, BigDecimal amount, String operateur, String phoneNumber) {
@@ -161,7 +174,7 @@ public class AangaraPayService {
             // 3. Construction du corps de la requête (Payload)
             Map<String, Object> requestBody = new HashMap<>();
             requestBody.put("phone_number", formattedPhone);
-            requestBody.put("amount" , amount);
+            requestBody.put("amount" , String.valueOf(amount));
             requestBody.put("description", "Paiement de la commande " + idCommande);
             requestBody.put("app_key", apiKey);
             requestBody.put("transaction_id", idTransaction);
@@ -259,9 +272,20 @@ public class AangaraPayService {
             Map<String, Object> responseBody = response.getBody();
 
             if (response.getStatusCode() == HttpStatus.OK && responseBody != null) {
-                StatutPaiement status = (StatutPaiement) responseBody.get("status");
-                log.info("AangaraaPay - Statut dépôt récupéré officiellement : {}", status);
-                return status != null ? status : StatutPaiement.PENDING;
+                Object statusObj = responseBody.get("status");
+
+                if (statusObj != null) {
+                    String statusStr = statusObj.toString().trim();
+
+                    try {
+                        StatutPaiement status = StatutPaiement.valueOf(statusStr);
+                        log.info("AangaraaPay - Statut dépôt récupéré officiellement : {}", status);
+                        return status;
+                    } catch (IllegalArgumentException ex) {
+                        log.warn("AangaraaPay - Statut inconnu reçu de l'API : {}. Retour par défaut à PENDING.", statusStr);
+                        return StatutPaiement.PENDING;
+                    }
+                }
             }
 
         } catch (Exception e) {

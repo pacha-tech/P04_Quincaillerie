@@ -6,6 +6,7 @@ import com.google.firebase.auth.UserRecord;
 import com.ict300.P04.DTO.user.customer.request.RegisterCustomerDTO;
 import com.ict300.P04.DTO.user.customer.response.AuthResponseDTO;
 import com.ict300.P04.Entite.User;
+import com.ict300.P04.Exception.UserAlreadyExistsException;
 import com.ict300.P04.Service.cloudinary.UploadImage;
 import com.ict300.P04.repository.interfaces.user.customer.CustomerInterface;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -22,9 +23,6 @@ import java.util.Map;
 public class AuthCustomerService {
     @Autowired
     private CustomerInterface userInterface;
-
-    @Autowired
-    private PasswordEncoder passwordEncoder;
 
     @Autowired
     private UploadImage uploadImage;
@@ -54,7 +52,7 @@ public class AuthCustomerService {
         try {
             userRecord = FirebaseAuth.getInstance().createUser(request);
         } catch (FirebaseAuthException e) {
-            throw new Exception("Erreur Firebase : " + e.getMessage());
+            throw new UserAlreadyExistsException("Erreur Firebase : " + e.getMessage());
         }
 
         User newUser = new User();

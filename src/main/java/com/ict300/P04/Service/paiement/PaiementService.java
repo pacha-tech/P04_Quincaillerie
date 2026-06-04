@@ -1,7 +1,6 @@
 package com.ict300.P04.Service.paiement;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.ObjectMapper;
 import com.ict300.P04.DTO.paiement.aangaraPay.response.WebhookPayloadResponse;
 import com.ict300.P04.DTO.paiement.response.PaiementResponseDTO;
 import com.ict300.P04.Entite.*;
@@ -17,7 +16,7 @@ import com.ict300.P04.Utilitaires.StatutPaiement;
 import com.ict300.P04.repository.interfaces.commande.CommandeInterface;
 import com.ict300.P04.repository.interfaces.detailCommande.DetailCommandeInterface;
 import com.ict300.P04.repository.interfaces.ligneCommande.LigneCommandeInterface;
-import com.ict300.P04.repository.interfaces.transactionPaiement.TransactionPaiementInterface;
+import com.ict300.P04.repository.interfaces.transaction.paiement.TransactionPaiementInterface;
 import com.ict300.P04.repository.interfaces.user.customer.CustomerInterface;
 import jakarta.mail.MessagingException;
 import lombok.extern.slf4j.Slf4j;
@@ -56,6 +55,9 @@ public class PaiementService {
 
     @Autowired
     private TransactionPaiementInterface transactionPaiementInterface;
+
+    @Autowired
+    private PaiementSseService paiementSseService;
 
     @Transactional
     public PaiementResponseDTO processPayment(String idCommande, String userId , String operateur, String phoneNumber) {
@@ -195,14 +197,17 @@ public class PaiementService {
         switch (statutOfficiel) {
             case SUCCESSFUL:
                 commandeService.confirmerPaiement(idTransaction, method);
+                paiementSseService.notifierChangementStatut(idTransaction , StatutPaiement.SUCCESSFUL);
                 break;
 
             case FAILED:
                 commandeService.echecPaiement(idTransaction);
+                paiementSseService.notifierChangementStatut(idTransaction , StatutPaiement.FAILED);
                 break;
 
             case PENDING:
                 log.info("Paiement toujours en attente pour la transaction : {}", idTransaction);
+                paiementSseService.notifierChangementStatut(idTransaction , StatutPaiement.PENDING);
                 break;
 
             default:

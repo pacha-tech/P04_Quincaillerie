@@ -7,10 +7,10 @@ import lombok.NoArgsConstructor;
 @Data @AllArgsConstructor @NoArgsConstructor
 public class WithdrawalData {
     private String status;
-    private String referenceId;
-    private String transactionId;
+    private String reference_id;
+    private String transaction_id;
     private String amount;
-    private String phoneNumber;
-    private String paymentMethod;
+    private String phone_number;
+    private String payment_method;
     private String message;
 }

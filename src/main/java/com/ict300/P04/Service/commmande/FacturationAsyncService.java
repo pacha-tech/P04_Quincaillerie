@@ -2,6 +2,7 @@ package com.ict300.P04.Service.commmande;
 
 import com.ict300.P04.Entite.Commande;
 import com.ict300.P04.Entite.Facture;
+import com.ict300.P04.Exception.ResourceNotFoundException;
 import com.ict300.P04.Service.email.EmailService;
 import com.ict300.P04.Service.facture.FactureService;
 import com.ict300.P04.repository.interfaces.facture.FactureInterface;
@@ -11,6 +12,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.web.server.ResponseStatusException;
 
 @Slf4j
 @Service
@@ -23,14 +25,15 @@ public class FacturationAsyncService {
     private final CommandeInterface commandeInterface;
 
     @Async
+    @Transactional
     public void processFactureAndEmail(String idCommande, String idFacture, String idTransaction, String method) {
         log.info("Début du traitement asynchrone (Génération PDF & Email) pour la commande ID: {}", idCommande);
 
         try {
             Commande commande = commandeInterface.findById(idCommande)
-                    .orElseThrow(() -> new RuntimeException("Commande introuvable"));
+                    .orElseThrow(() -> new ResourceNotFoundException("Commande introuvable"));
             Facture facture = factureInterface.findById(idFacture)
-                    .orElseThrow(() -> new RuntimeException("Facture introuvable"));
+                    .orElseThrow(() -> new ResourceNotFoundException("Facture introuvable"));
 
             String urlCloudinary = factureService.generateFacture(commande, commande.getUser(), idTransaction, method);
 
@@ -49,7 +52,7 @@ public class FacturationAsyncService {
                     + "  <a href='" + urlCloudinary + "' style='background-color: #D35400; color: white; padding: 15px 25px; text-decoration: none; border-radius: 5px; font-size: 16px; font-weight: bold;'>📄 Télécharger ma facture</a>"
                     + "</div>"
                     + "<hr style='border-top: 1px solid #eee;'>"
-                    + "<p style='font-size: 14px; color: #777; text-align: center;'>L'équipe de Brixel<br>Merci de votre confiance.</p>"
+                    + "<p style='font-size: 14px; color: #777; text-align: center;'>L'équipe de Brixel<br>vous remercie pour votre confiance.</p>"
                     + "</div>";
 
             emailService.envoyerEmailHtml(emailClient, sujet, contenuHtml);

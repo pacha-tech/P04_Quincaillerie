@@ -8,13 +8,9 @@ import com.ict300.P04.DTO.paiement.redix.VendeurContextDTO;
 import com.ict300.P04.Entite.*;
 import com.ict300.P04.Exception.*;
 import com.ict300.P04.Service.email.EmailService;
-import com.ict300.P04.Service.facture.FactureService;
 import com.ict300.P04.Service.notification.SystemNotificationService;
 import com.ict300.P04.Service.paiement.RedixService;
-import com.ict300.P04.Utilitaires.GenerateID;
-import com.ict300.P04.Utilitaires.MouvementStock;
-import com.ict300.P04.Utilitaires.NotificationType;
-import com.ict300.P04.Utilitaires.StatutCommande;
+import com.ict300.P04.Utilitaires.*;
 import com.ict300.P04.repository.interfaces.commande.CommandeInterface;
 import com.ict300.P04.repository.interfaces.detailCommande.DetailCommandeInterface;
 import com.ict300.P04.repository.interfaces.detailRetrait.DetailRetraitInterface;
@@ -26,6 +22,8 @@ import com.ict300.P04.repository.interfaces.price.PriceInterface;
 import com.ict300.P04.repository.interfaces.quincaillerie.QuincaillerieInterface;
 import com.ict300.P04.repository.interfaces.stock.StockInterface;
 import com.ict300.P04.repository.interfaces.systemNotification.SystemNotificationInterface;
+import com.ict300.P04.repository.interfaces.transaction.paiement.TransactionPaiementInterface;
+import com.ict300.P04.repository.interfaces.transaction.versement.TransactionVersementInterface;
 import com.ict300.P04.repository.interfaces.user.customer.CustomerInterface;
 import jakarta.mail.MessagingException;
 import lombok.extern.slf4j.Slf4j;
@@ -81,7 +79,10 @@ public class CommandeService {
     private SystemNotificationService notificationService;
 
     @Autowired
-    private FactureService factureService;
+    private TransactionPaiementInterface transactionPaiementInterface;
+
+    @Autowired
+    private TransactionVersementInterface transactionVersementInterface;
 
     @Autowired
     private EmailService emailService;
@@ -341,13 +342,22 @@ public class CommandeService {
 
      @Transactional
     public void confirmerPaiement(String idTransaction, String method) {
-        Commande commande = commandeInterface.getCommandeByIdTransaction(idTransaction)
-                .orElseThrow(() -> new ResourceNotFoundException("L'id de la transaction n'existe pas"));
+        TransactionPaiement tx = transactionPaiementInterface.findByIdTransaction(idTransaction)
+                 .orElseThrow(() -> new ResourceNotFoundException("L'id de la transaction n'existe pas"));
+
+        Commande commande = tx.getCommande();
 
         if(commande.getStatut() == StatutCommande.PAYEE) {
             log.info("La transaction {} a déjà été traitée. Webhook ignoré.", idTransaction);
             return;
         }
+
+         if (tx.getStatutAgregateur() != StatutPaiement.SUCCESSFUL) {
+             tx.setStatutAgregateur(StatutPaiement.SUCCESSFUL);
+             tx.setDateMiseAJour(LocalDateTime.now());
+             if (method != null) tx.setOperateur(method);
+             transactionPaiementInterface.save(tx);
+         }
 
         DetailCommande detailCommande = detailCommandeInterface.getDetailCommandeByCommande(commande.getIdCommande())
                 .orElseThrow(() -> new ResourceNotFoundException("Les détails de cette commande sont introuvables."));
@@ -449,13 +459,23 @@ public class CommandeService {
 
         facture = factureInterface.save(facture);
 
-        facturationAsyncService.processFactureAndEmail(commande.getIdCommande() , facture.getIdFacture() , idTransaction , method);
+         final String finalIdFacture = facture.getIdFacture();
+         org.springframework.transaction.support.TransactionSynchronizationManager.registerSynchronization(
+                 new org.springframework.transaction.support.TransactionSynchronization(){
+                     @Override
+                     public void afterCommit() {
+                         facturationAsyncService.processFactureAndEmail(commande.getIdCommande() , finalIdFacture , idTransaction , method);
+                     }
+                 }
+         );
     }
 
     @Transactional
     public void echecPaiement(String idTransaction) throws MessagingException {
-        Commande commande = commandeInterface.getCommandeByIdTransaction(idTransaction)
+        TransactionPaiement tx = transactionPaiementInterface.findByIdTransaction(idTransaction)
                 .orElseThrow(() -> new ResourceNotFoundException("L'id de la transaction n'existe pas"));
+
+        Commande commande = tx.getCommande();
 
         if (commande.getStatut() == StatutCommande.PAYEE) {
             log.warn("ALERTE : Tentative de mise en échec d'une commande déjà PAYÉE (Transaction {}). Action bloquée.", idTransaction);
@@ -531,8 +551,11 @@ public class CommandeService {
 
     @Transactional
     public void confirmerTransfert(String idTransaction) {
-        Commande commande = commandeInterface.getCommandeByIdTransaction(idTransaction)
+
+        TransactionVersement transactionVersement = transactionVersementInterface.findByIdTransaction(idTransaction)
                 .orElseThrow(() -> new ResourceNotFoundException("L'id de la transaction n'existe pas"));
+
+        Commande commande = transactionVersement.getCommande();
 
         DetailCommande detailCommande = detailCommandeInterface.getDetailCommandeByCommande(commande.getIdCommande())
                 .orElseThrow(() -> new ResourceNotFoundException("Détails de la commande introuvables"));
@@ -540,6 +563,9 @@ public class CommandeService {
         commande.setStatut(StatutCommande.LIVREE);
         commandeInterface.save(commande);
 
+        transactionVersement.setStatut(StatutPaiement.SUCCESSFUL);
+        transactionVersement.setDateMiseAJour(LocalDateTime.now());
+        transactionVersementInterface.save(transactionVersement);
 
         detailCommande.setDateRetrait(LocalDateTime.now());
         detailCommandeInterface.save(detailCommande);

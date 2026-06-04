@@ -1,12 +1,17 @@
 package com.ict300.P04.Service.paiement;
 
+import com.ict300.P04.DTO.paiement.aangaraPay.response.WithdrawalResponse;
 import com.ict300.P04.DTO.paiement.request.ValidationRetraitDTO;
 import com.ict300.P04.Entite.*;
 import com.ict300.P04.Exception.*;
-import com.ict300.P04.Service.paiement.sharePayService.SharePayService;
+import com.ict300.P04.Service.paiement.aangaraPayService.AangaraPayService;
+import com.ict300.P04.Utilitaires.GenerateID;
+import com.ict300.P04.Utilitaires.StatutCommande;
+import com.ict300.P04.Utilitaires.StatutPaiement;
 import com.ict300.P04.repository.interfaces.detailCommande.DetailCommandeInterface;
 import com.ict300.P04.repository.interfaces.quincaillerie.QuincaillerieInterface;
 import com.ict300.P04.repository.interfaces.retraitCode.RetraitCodeInterface;
+import com.ict300.P04.repository.interfaces.transaction.versement.TransactionVersementInterface;
 import com.ict300.P04.repository.interfaces.user.seller.SellerInterface;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.crypto.password.PasswordEncoder;
@@ -14,6 +19,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.Instant;
+import java.time.LocalDateTime;
 
 @Service
 public class RetraitService {
@@ -31,7 +37,10 @@ public class RetraitService {
     private QuincaillerieInterface quincaillerieInterface;
 
     @Autowired
-    private SharePayService sharePayService;
+    private AangaraPayService aangaraPayService;
+
+    @Autowired
+    private TransactionVersementInterface transactionVersementInterface;
 
     @Autowired
     private SellerInterface sellerInterface;
@@ -63,6 +72,11 @@ public class RetraitService {
             throw new OtpCodeExpiredException("Le code a expiré, veuillez en demander un autre.");
         }
 
+        boolean dejaPaye = commande.getStatut().equals(StatutCommande.LIVREE);
+
+        if (dejaPaye) {
+            throw new RuntimeException("Les fonds pour cette commande ont déjà été transférés au vendeur.");
+        }
 
         if (retraitCode.getTentativesEchouees() >= 3) {
             throw new MaxAttemptsExceededException("Trop de tentatives échouées. Le code est bloqué.");
@@ -86,7 +100,24 @@ public class RetraitService {
         retraitCode.setValid(false);
         retraitCodeInterface.save(retraitCode);
 
-        sharePayService.transfererFondsAuVendeur(user.getPhone() , user.getName() , commande.getMontantTotal().doubleValue() , commande.getIdCommande() , user.getEmail());
+        String amount = String.valueOf(commande.getMontantTotal().longValue());
+        WithdrawalResponse withdrawalResponse = aangaraPayService.transfererFondsAuVendeur(commande.getQuincaillerie().getIdQuincaillerie() , amount);
 
+        System.out.println(withdrawalResponse);
+
+        TransactionVersement versement = new TransactionVersement();
+
+        versement.setIdTransactionVersement(GenerateID.GenerateTransactionVersementID());
+        versement.setReferenceId(withdrawalResponse.getData().getReference_id());
+        versement.setIdTransaction(withdrawalResponse.getData().getTransaction_id());
+        versement.setMontantNetTransfere(Double.parseDouble(amount));
+        versement.setNumeroTelephone(withdrawalResponse.getData().getPhone_number());
+        versement.setOperateur(withdrawalResponse.getData().getPayment_method());
+        versement.setStatut(StatutPaiement.PENDING);
+        versement.setCommande(commande);
+        versement.setDateCreation(LocalDateTime.now());
+        versement.setDateMiseAJour(LocalDateTime.now());
+
+        transactionVersementInterface.save(versement);
     }
 }

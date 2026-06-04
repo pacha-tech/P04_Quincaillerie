@@ -17,10 +17,10 @@ public class TransactionPaiement {
     @Column(name = "id_transaction", unique = true, nullable = false)
     private String idTransaction;
 
-    @Column(name = "pay_token")
+    @Column(name = "pay_token" , nullable = false)
     private String payToken;
 
-    @Column(name = "operateur")
+    @Column(name = "operateur" , nullable = false)
     private String operateur;
 
     @Enumerated(EnumType.STRING)

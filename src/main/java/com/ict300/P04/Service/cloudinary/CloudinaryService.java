@@ -72,7 +72,7 @@ public class CloudinaryService {
                     ObjectUtils.asMap(
                             "folder", folder,
                             "public_id", fileName,
-                            "resource_type", "raw" // CRUCIAL : "raw" pour les fichiers PDF/Non-image
+                            "resource_type", "image"
                     ));
 
             String url = uploadResult.get("secure_url").toString();

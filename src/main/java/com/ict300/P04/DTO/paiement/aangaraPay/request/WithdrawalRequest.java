@@ -6,9 +6,9 @@ import lombok.NoArgsConstructor;
 
 @Data @AllArgsConstructor @NoArgsConstructor
 public class WithdrawalRequest {
-    private String appKey;
-    private String phoneNumber;
+    private String app_key;
+    private String phone_number;
     private String amount;
-    private String paymentMethod;
+    private String payment_method;
     private String username;
 }

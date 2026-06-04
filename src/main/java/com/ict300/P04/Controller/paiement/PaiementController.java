@@ -139,6 +139,8 @@ public class PaiementController {
         System.out.println("Statut annoncé       : " + payload.getStatus());
         System.out.println("==========================================\n");
 
+        System.out.println(payload);
+
 
         if (payload.getPaytoken() == null || payload.getPaytoken().isEmpty()) {
             System.out.println("❌ Webhook ignoré : payToken manquant.");

@@ -10,8 +10,8 @@ import java.time.LocalDateTime;
 @Table(name = "ComptePaiementVendeur")
 public class ComptePaiementVendeur {
     @Id
-    @Column(name = "id_compte_paiement_vendeur")
-    private Long idComptePaiementVendeur;
+    @Column(name = "id_compte_paiement_vendeur" , length = 10)
+    private String idComptePaiementVendeur;
 
     @OneToOne
     @JoinColumn(name = "vendeur_id", nullable = false, unique = true)
