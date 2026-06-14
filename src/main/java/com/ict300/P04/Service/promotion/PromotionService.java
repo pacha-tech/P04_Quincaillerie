@@ -1,5 +1,6 @@
 package com.ict300.P04.Service.promotion;
 
+import com.ict300.P04.DTO.localisation.LocalisationDTO;
 import com.ict300.P04.DTO.price.response.PriceSearchProductDTO;
 import com.ict300.P04.DTO.product.response.SearchProductDTO;
 import com.ict300.P04.DTO.promotion.request.AddPromotionDTO;
@@ -8,6 +9,7 @@ import com.ict300.P04.DTO.promotion.response.ProduitPromotionDTO;
 import com.ict300.P04.Entite.*;
 import com.ict300.P04.Exception.AppException;
 import com.ict300.P04.Exception.ResourceNotFoundException;
+import com.ict300.P04.Service.localisation.LocalisationService;
 import com.ict300.P04.Utilitaires.GenerateID;
 import com.ict300.P04.Utilitaires.GeoUtils;
 import com.ict300.P04.repository.interfaces.campagnePromotion.CampagnePromotionInterface;
@@ -40,6 +42,9 @@ public class PromotionService {
 
     @Autowired
     private QuincaillerieInterface quincaillerieInterface;
+
+    @Autowired
+    private LocalisationService localisationService;
 
     @Transactional
     public void addPromotion(AddPromotionDTO dto, String idQuincaillerie) {
@@ -127,7 +132,8 @@ public class PromotionService {
         }).toList();
     }
 
-    public List<SearchProductDTO> getAllProduitInPromotionGrouped(Double latitude , Double longitude ) {
+    /*
+    public List<SearchProductDTO> getAllProduitInPromotionGrouped(Double latitude , Double longitude , String scope) {
         List<Object[]> results = priceInterface.findPricesWithActivePromotion();
 
         Map<Product, List<Object[]>> groupedByProduct = results.stream()
@@ -151,6 +157,93 @@ public class PromotionService {
                     ));
         }
 
+        return stream.map(entry -> {
+            Product product = entry.getKey();
+
+            List<PriceSearchProductDTO> prices = entry.getValue().stream()
+                    .map(this::mapToPriceSearchDTO)
+                    .collect(Collectors.toList());
+
+            SearchProductDTO dto = new SearchProductDTO();
+            dto.setIdProduct(product.getIdProduct());
+            dto.setIdCategory(product.getCategory().getIdCategory());
+            dto.setName(product.getName());
+            dto.setUnite(product.getUnit());
+            dto.setImageUrl(product.getImageUrl());
+            dto.setDescription(product.getDescription());
+            dto.setPriceSearchProductsDTO(prices);
+
+            return dto;
+        }).collect(Collectors.toList());
+    }
+     */
+
+    public List<SearchProductDTO> getAllProduitInPromotionGrouped(Double latitude, Double longitude, String scope) {
+        // Récupération brute
+        List<Object[]> results = priceInterface.findPricesWithActivePromotion();
+
+        // 1. FILTRAGE PAR SCOPE (Ville, Région, ou Rayon Km)
+        if (latitude != null && longitude != null) {
+            double maxDistanceKm = GeoUtils.convertScopeToKilometers(scope);
+            boolean isCityScope = "ville".equalsIgnoreCase(scope);
+            boolean isRegionScope = "region".equalsIgnoreCase(scope);
+
+            String userCity = null;
+            String userRegion = null;
+
+            // Récupération de l'adresse utilisateur si besoin
+            if (isCityScope || isRegionScope) {
+                LocalisationDTO loc = localisationService.getAddress(latitude, longitude);
+                userCity = loc.getVille();
+                userRegion = loc.getRegion();
+            }
+
+            final String finalUserCity = userCity;
+            final String finalUserRegion = userRegion;
+
+            // Filtrage du flux de résultats
+            results = results.stream().filter(res -> {
+                Price price = (Price) res[0];
+                Quincaillerie quincaillerie = price.getQuincaillerie();
+
+                Double storeLat = quincaillerie.getLatitude() != null ? quincaillerie.getLatitude().doubleValue() : null;
+                Double storeLng = quincaillerie.getLongitude() != null ? quincaillerie.getLongitude().doubleValue() : null;
+
+                if (isCityScope) {
+                    return finalUserCity != null && !"Non défini".equals(finalUserCity) && finalUserCity.equalsIgnoreCase(quincaillerie.getCity());
+                } else if (isRegionScope) {
+                    return finalUserRegion != null && !"Non défini".equals(finalUserRegion) && finalUserRegion.equalsIgnoreCase(quincaillerie.getRegion());
+                } else if (storeLat != null && storeLng != null) {
+                    double distance = GeoUtils.calculateDistance(latitude, longitude, storeLat, storeLng);
+                    return distance <= maxDistanceKm;
+                }
+                return false;
+            }).toList();
+        }
+
+        // 2. GROUPEMENT PAR PRODUIT DES RÉSULTATS FILTRÉS
+        Map<Product, List<Object[]>> groupedByProduct = results.stream()
+                .collect(Collectors.groupingBy(
+                        result -> ((Price) result[0]).getProduct()
+                ));
+
+        Stream<Map.Entry<Product, List<Object[]>>> stream = groupedByProduct.entrySet().stream();
+
+        // 3. TRI PAR DISTANCE POUR CHAQUE PRODUIT ET ENTRE PRODUITS
+        if (latitude != null && longitude != null) {
+            stream = stream.peek(entry -> entry.getValue().sort(Comparator.comparingDouble(res ->
+                            GeoUtils.calculateDistance(latitude, longitude,
+                                    ((Price) res[0]).getQuincaillerie().getLatitude().doubleValue(),
+                                    ((Price) res[0]).getQuincaillerie().getLongitude().doubleValue())
+                    )))
+                    .sorted(Comparator.comparingDouble(entry ->
+                            GeoUtils.calculateDistance(latitude, longitude,
+                                    ((Price) entry.getValue().get(0)[0]).getQuincaillerie().getLatitude().doubleValue(),
+                                    ((Price) entry.getValue().get(0)[0]).getQuincaillerie().getLongitude().doubleValue())
+                    ));
+        }
+
+        // 4. MAPPING VERS SearchProductDTO
         return stream.map(entry -> {
             Product product = entry.getKey();
 

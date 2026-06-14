@@ -102,14 +102,14 @@ public class PriceInterfaceImpl implements PriceCustomInterface {
     }
 
     @Override
-    public Optional<Price> findByProductAndQuincaillerie(String idProduct, String idQuincaillerie) {
+    public Optional<Price> findByProductAndQuincaillerie(String idPrice, String idQuincaillerie) {
         String jpql = "SELECT p " +
                 "FROM Price p " +
-                "WHERE p.product.idProduct = :id1 " +
+                "WHERE p.idPrice = :id1 " +
                 "AND p.quincaillerie.idQuincaillerie = :id2 ";
 
         return entityManager.createQuery(jpql , Price.class)
-                .setParameter("id1" , idProduct)
+                .setParameter("id1" , idPrice)
                 .setParameter("id2" , idQuincaillerie)
                 .getResultList().stream().findFirst();
     }

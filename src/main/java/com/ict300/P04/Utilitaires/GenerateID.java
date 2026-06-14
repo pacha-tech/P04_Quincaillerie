@@ -223,4 +223,12 @@ public class GenerateID {
         }
         return sb.toString();
     }
+
+    public static String GenerateHistoriquenavigationID() {
+        StringBuilder sb = new StringBuilder("HINA");
+        for (int i = 0; i < 5; i++) {
+            sb.append(ALPHABET.charAt(RANDOM.nextInt(ALPHABET.length())));
+        }
+        return sb.toString();
+    }
 }

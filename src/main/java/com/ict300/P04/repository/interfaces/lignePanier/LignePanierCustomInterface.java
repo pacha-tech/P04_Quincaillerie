@@ -11,6 +11,7 @@ public interface LignePanierCustomInterface {
     int findQuantityByProductInPanier(String idPrice , Panier panier);
     List<Object[]> findLignesPanierWithPromoByUser(User user);
     void deletePanierByQuincaillerie(String idQuincaillerie , User user);
+    void deleteAllPanierByUser(User user);
     LignePanier getProductInPanier(String idprice , Panier panier);
     List<LignePanier> getAllProductInPanier(String idPanier);
     Object[] findIfproductIsInPromotion(String idPrice);

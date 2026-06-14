@@ -140,7 +140,7 @@ public class ProductService {
         }).toList();
     }
 
-    public SearchProductDTO getProductById(String idPrice) {
+    public SearchProductDTO getProductSearchById(String idPrice) {
 
         priceInterface.findById(idPrice).orElseThrow(() -> new ProductNotFoundException("Le produit n'existe pas"));
 
@@ -185,11 +185,12 @@ public class ProductService {
     }
 
     public List<getProductSuggestionDTO> getAllSuggestions() {
-        return productInterface.findAll().stream()
+        return productInterface.findOnlyName().stream()
                 .map(p -> new getProductSuggestionDTO(
                         p.getIdProduct(), p.getName(), p.getCategory().getIdCategory(),
                         p.getCategory().getName(), p.getDescription(),
-                        p.getCategory().getDescription(), p.getBrand(), p.getUnit()
+                        p.getCategory().getDescription(), p.getBrand(), p.getUnit(),
+                        p.getImageUrl()
                 )).toList();
     }
 
@@ -258,11 +259,12 @@ public class ProductService {
     }
 
     @Transactional
-    public void updateProduct(String idProduct, UpdateProductDTO dto, MultipartFile image, String qId) {
-        Product product = productInterface.getProduct(idProduct);
-        Price price = priceInterface.findByProductAndQuincaillerie(idProduct, qId).orElse(null);
+    public void updateProduct(String idPrice, UpdateProductDTO dto, MultipartFile image, String qId) {
+        //Product product = productInterface.getProduct(idProduct).orElseThrow(() -> new ProductNotFoundException("Le produit n'existe pas en BD"));
+        Price price = priceInterface.findByProductAndQuincaillerie(idPrice, qId).orElseThrow(() -> new ProductNotFoundException("Produit non trouvé pour cette quincaillerie"));
+        Product product = price.getProduct();
 
-        if (price == null) throw new ProductNotFoundException("Produit non trouvé pour cette quincaillerie");
+        log.info("Le DTO recu est: "+dto);
 
         if (image != null && !image.isEmpty()) {
 
@@ -283,9 +285,22 @@ public class ProductService {
 
         if (dto.getPurchasePrice() != null) price.setPurchasePrice(dto.getPurchasePrice());
         if (dto.getSellingPrice() != null) price.setPrice(dto.getSellingPrice());
-        if (dto.getQuantite() != null) price.setStock(dto.getQuantite());
+        if (dto.getQuantite() != null){
+            Stock stock = new Stock();
+            stock.setIdStock(GenerateID.GenerateStockID());
+            stock.setPrice(price);
+            stock.setQuantity(dto.getQuantite());
+            stock.setDateMouvement(LocalDateTime.now());
+            stock.setComment("Mise a jour du produit "+product.getName());
+            stock.setTypeMouvement(MouvementStock.ENTREE);
+
+            stockInterface.save(stock);
+
+            price.setStock(dto.getQuantite());
+        }
 
         price.setUpdateDate(LocalDateTime.now());
+        log.info("La nouvelle quantite est: "+price.getStock());
 
         productInterface.save(product);
         priceInterface.save(price);
@@ -296,9 +311,9 @@ public class ProductService {
         Price price = priceInterface.getPriceByProductAndQuincaillerie(idProduct, qId).orElse(null);
         if (price == null) throw new ProductNotFoundException("Ce Produit n'existe pas");
 
-        Product product = productInterface.getProduct(idProduct);
+        Product product = productInterface.getProduct(idProduct).orElseThrow(() -> new ProductNotFoundException("Le produit n'existe pas"));
 
-        if (product != null && product.getImageUrl() != null) {
+        if (product.getImageUrl() != null) {
             cloudinaryService.deleteImage(product.getImageUrl());
         }
 
@@ -308,19 +323,6 @@ public class ProductService {
             productInterface.deleteById(idProduct);
         }
     }
-
-
-    /*
-    private String uploadImageSafely(MultipartFile image) {
-        if (image == null || image.isEmpty()) return null;
-        try {
-            return cloudinaryService.uploadImageProduct(image);
-        } catch (IOException e) {
-            log.error("Erreur Cloudinary: {}", e.getMessage());
-            return null;
-        }
-    }
-    */
 
     private ProductStockDTO mapToStockDTO(Price entity, Object tauxObj) {
         ProductStockDTO dto = new ProductStockDTO();
@@ -347,5 +349,25 @@ public class ProductService {
             dto.setInPromotion(false);
         }
         return dto;
+    }
+
+    public ProductStockDTO getProductStockById(String idPrice) {
+        Price price = priceInterface.findById(idPrice).orElseThrow(() -> new ProductNotFoundException("Le produit n'existe pas"));
+
+        return new ProductStockDTO(
+                price.getProduct().getIdProduct(),
+                price.getProduct().getName(),
+                price.getProduct().getBrand(),
+                price.getProduct().getCategory().getName(),
+                price.getStock(),
+                price.getProduct().getUnit(),
+                price.getPrice().toString(),
+                price.getProduct().getImageUrl(),
+                price.getProduct().getDescription(),
+                price.getPurchasePrice().toString(),
+                null,
+                false,
+                null
+        );
     }
 }

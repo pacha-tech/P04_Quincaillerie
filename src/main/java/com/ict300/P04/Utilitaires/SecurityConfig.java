@@ -1,5 +1,6 @@
 package com.ict300.P04.Utilitaires;
 
+import jakarta.servlet.DispatcherType;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.security.config.Customizer;
@@ -37,6 +38,8 @@ public class SecurityConfig {
 
                 .authorizeHttpRequests(auth -> auth
                         // Autorisations publiques
+                        .requestMatchers(HttpMethod.OPTIONS, "/**").permitAll()
+                        .dispatcherTypeMatchers(DispatcherType.ERROR).permitAll()
                         .requestMatchers("/", "/index.html", "/static/**", "/favicon.ico").permitAll()
                         .requestMatchers("/quincaillerie/auth/**").permitAll()
                         .requestMatchers("/quincaillerie/favorite/**").authenticated()
@@ -54,6 +57,7 @@ public class SecurityConfig {
                         .requestMatchers("/quincaillerie/category/allCategory").permitAll()
                         .requestMatchers("/quincaillerie/promotion/allProductInPromotion").permitAll()
                         .requestMatchers("/quincaillerie/promotion/**").hasRole("VENDEUR")
+                        .requestMatchers("quincaillerie/getDashboard").hasRole("VENDEUR")
                         .requestMatchers("/quincaillerie/panier/**").permitAll()
                         .requestMatchers("/quincaillerie/localisation").permitAll()
                         .requestMatchers("/quincaillerie/paiement/webhook").permitAll()
@@ -64,15 +68,13 @@ public class SecurityConfig {
                         .requestMatchers("/quincaillerie/test-email").permitAll()
                         .requestMatchers("/quincaillerie/stats/**").hasRole("VENDEUR")
                         .requestMatchers("/quincaillerie/notifications/**").permitAll()
+                        .requestMatchers("/quincaillerie/paiementNotification/**").permitAll()
                         .requestMatchers("/quincaillerie/ping").permitAll()
                         .requestMatchers("/v3/api-docs/**").permitAll()
                         .requestMatchers("/swagger-ui/**").permitAll()
                         .requestMatchers("/swagger-ui.html").permitAll()
                         .requestMatchers("/connexion/**").permitAll()
                         .requestMatchers("/error").permitAll()
-
-                        // Autoriser les requêtes OPTIONS (CORS)
-                        .requestMatchers(HttpMethod.OPTIONS, "/**").permitAll()
 
                         // Tout le reste demande une authentification
                         .anyRequest().authenticated()
@@ -97,12 +99,12 @@ public class SecurityConfig {
 
         // L'astuce magique : On autorise N'IMPORTE QUEL port localhost pour Flutter !
         configuration.setAllowedOriginPatterns(Arrays.asList(
-                "http://localhost:*",
-                "http://192.168.0.106:3000/*",
+                "http://localhost:3000",
+                "http://192.168.0.106:3000",
                 "https://brixel-web.onrender.com"
                 ));
 
-        configuration.setAllowedMethods(Arrays.asList("GET", "POST", "PUT", "DELETE", "OPTIONS"));
+        configuration.setAllowedMethods(Arrays.asList("GET", "POST", "PUT", "DELETE", "OPTIONS" , "PATCH"));
         configuration.setAllowedHeaders(Arrays.asList("*")); // On autorise tous les headers
         configuration.setAllowCredentials(true); // Indispensable si tu utilises des tokens
 

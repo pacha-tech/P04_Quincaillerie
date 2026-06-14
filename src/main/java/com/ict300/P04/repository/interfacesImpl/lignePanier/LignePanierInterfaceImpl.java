@@ -74,6 +74,17 @@ public class LignePanierInterfaceImpl implements LignePanierCustomInterface {
     }
 
     @Override
+    public void deleteAllPanierByUser(User user) {
+        String jpql = "DELETE " +
+                "FROM LignePanier lp " +
+                "WHERE lp.panier.user = :id ";
+
+        entityManager.createQuery(jpql)
+                .setParameter("id" , user)
+                .executeUpdate();
+    }
+
+    @Override
     public LignePanier getProductInPanier(String idPrice, Panier panier) {
         String jpql = "SELECT lp " +
                 "FROM LignePanier lp " +

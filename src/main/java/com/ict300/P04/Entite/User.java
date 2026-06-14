@@ -64,7 +64,7 @@ public class User {
     private List<FavoriteQuincaillerie> favoriteQuincailleries = new ArrayList<>();
 
     @OneToMany(mappedBy = "user")
-    private List<HistoricalSearch> historicalSearchs = new ArrayList<>();
+    private List<HistoriqueNavigation> historiqueNavigations = new ArrayList<>();
 
     @OneToMany(mappedBy = "user")
     private List<Report> reports = new ArrayList<>();

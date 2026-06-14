@@ -26,8 +26,17 @@ public class PaiementSseService {
         };
 
         emitter.onCompletion(nettoyerEmitter);
-        emitter.onTimeout(nettoyerEmitter);
-        emitter.onError((e) -> nettoyerEmitter.run());
+        emitter.onTimeout(() -> {
+                    log.warn("Timeout SSE atteint pour la transaction : {}", transactionId);
+                    emitter.complete();
+                    nettoyerEmitter.run();
+        });
+
+        emitter.onError((e) -> {
+            log.error("Erreur SSE pour la transaction : {}", transactionId, e);
+            emitter.complete();
+            nettoyerEmitter.run();
+        });
 
         try {
             emitter.send(SseEmitter.event()

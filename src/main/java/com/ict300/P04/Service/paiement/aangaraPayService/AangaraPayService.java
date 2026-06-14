@@ -287,7 +287,6 @@ public class AangaraPayService {
                     }
                 }
             }
-
         } catch (Exception e) {
             log.error("AangaraaPay - Échec de l'appel de vérification du dépôt (payToken: {}) : {}", payToken, e.getMessage());
         }

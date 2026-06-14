@@ -80,7 +80,7 @@ public class FavoriteService {
         }
 
         User user = userInterface.getByIdUser(addFavoriteProductDTO.getIdUser()).orElse(null);
-        Product product = productInterface.getProduct(addFavoriteProductDTO.getIdProduct());
+        Product product = productInterface.getProduct(addFavoriteProductDTO.getIdProduct()).orElseThrow(()-> new ProductNotFoundException("Le produit n'exuste pas"));
 
         FavoriteProduct favoriteProduct = new FavoriteProduct();
 

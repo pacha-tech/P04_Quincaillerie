@@ -11,9 +11,9 @@ import java.math.BigDecimal;
 @Data
 public class UpdateProductDTO {
 
-    private String name;                    // Optionnel : nouveau nom
-    private String brand;                   // Optionnel : marque
-    private String descriptionProduit;      // Optionnel : description
+    private String name;
+    private String brand;
+    private String descriptionProduit;
     private BigDecimal purchasePrice;       // Optionnel : prix d'achat
     private BigDecimal sellingPrice;        // Optionnel : prix de vente
     private Integer quantite;               // Optionnel : stock / quantité

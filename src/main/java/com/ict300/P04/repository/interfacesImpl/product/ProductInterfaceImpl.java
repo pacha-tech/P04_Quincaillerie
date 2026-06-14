@@ -13,6 +13,7 @@ import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.Optional;
 
 @Repository
 public class ProductInterfaceImpl implements ProductCustomInterface {
@@ -64,14 +65,14 @@ public class ProductInterfaceImpl implements ProductCustomInterface {
     }
 
     @Override
-    public Product getProduct(String idProduct) {
+    public Optional<Product> getProduct(String idProduct) {
         String jpql = "SELECT p " +
                 "FROM Product p " +
                 "WHERE p.idProduct = :id ";
 
         return entityManager.createQuery(jpql , Product.class)
                 .setParameter("id",idProduct)
-                .getSingleResult();
+                .getResultList().stream().findFirst();
     }
 
     @Override
@@ -133,5 +134,31 @@ public class ProductInterfaceImpl implements ProductCustomInterface {
                 .setParameter("id" , idProduct)
                 .setParameter("now" , LocalDate.now())
                 .getSingleResult();
+    }
+
+    @Override
+    public List<Product> findOnlyName() {
+        String jpql = "SELECT p " +
+                "FROM Product p " +
+                "WHERE p.idProduct IN (" +
+                "SELECT MIN(p2.idProduct) " +
+                "FROM Product p2 " +
+                "GROUP BY p2.name)";
+
+        return entityManager.createQuery(jpql, Product.class)
+                .getResultList();
+    }
+
+    @Override
+    public Integer countProductByQuincaillerie(String idQuincaillerie) {
+        String jpql = " SELECT COUNT(p) " +
+                "FROM Price p " +
+                "WHERE p.quincaillerie.idQuincaillerie = :id ";
+
+        Long result = entityManager.createQuery(jpql , Long.class)
+                .setParameter("id" , idQuincaillerie)
+                .getSingleResult();
+
+        return result != null ? result.intValue() : 0;
     }
 }

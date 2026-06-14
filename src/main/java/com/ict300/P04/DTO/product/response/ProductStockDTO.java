@@ -4,6 +4,7 @@ import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
+
 @Data @AllArgsConstructor @NoArgsConstructor
 public class ProductStockDTO {
     private String idPrice;
@@ -21,3 +22,4 @@ public class ProductStockDTO {
     private String taux;
 
 }
+

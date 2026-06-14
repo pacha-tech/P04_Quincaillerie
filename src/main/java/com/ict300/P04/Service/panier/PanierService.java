@@ -149,9 +149,7 @@ public class PanierService {
     public void deleteAllPaniers(String idUser) {
         User user = customerInterface.getByIdUser(idUser).orElseThrow(() -> new UserNotFoundException("L'utilisateur n'existe pas"));
 
-        Panier panier = panierInterface.findPanierByUser(idUser).orElseThrow(() -> new ResourceNotFoundException("Cette Utilisateur n'a pas de panier"));
-
-        panierInterface.delete(panier);
+        lignePanierInterface.deleteAllPanierByUser(user);
     }
 
     @Transactional

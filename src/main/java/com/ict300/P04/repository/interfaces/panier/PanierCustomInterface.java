@@ -12,5 +12,5 @@ public interface PanierCustomInterface {
     void deletePanierByQuincaillerie(String idQuincaillerie , String idUser);
     List<Object[]> findPanierByUser(User user);
     Panier findProductInPanierByUser(String idUser , String idPrice);
-    Optional<Panier> findPanierByUser(String idUser);                //mise a jour du panier
+    Optional<Panier> findPanierByUser(String idUser);
 }

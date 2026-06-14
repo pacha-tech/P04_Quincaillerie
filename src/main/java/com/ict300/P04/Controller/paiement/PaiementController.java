@@ -141,11 +141,13 @@ public class PaiementController {
 
         System.out.println(payload);
 
-
+        /*
         if (payload.getPaytoken() == null || payload.getPaytoken().isEmpty()) {
             System.out.println("❌ Webhook ignoré : payToken manquant.");
             return ResponseEntity.badRequest().body("payToken manquant");
         }
+        */
+
 
         paymentService.handleWebhook(payload);
 

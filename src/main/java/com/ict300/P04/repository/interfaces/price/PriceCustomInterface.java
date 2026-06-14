@@ -14,7 +14,7 @@ public interface PriceCustomInterface {
     boolean ifAlreadyExistProductByQuincaillerie(String name , String quincaillerieId);
     Optional<Price> getPriceByProductAndQuincaillerie(String produitId , String quincaillerieId);
     Optional<Price> findByIdPrice(String idPrice);
-    Optional<Price> findByProductAndQuincaillerie(String idProduct , String idQuincaillerie);
+    Optional<Price> findByProductAndQuincaillerie(String idPrice , String idQuincaillerie);
     List<Price> findByQuincaillerie(String idQuincaillerie);
     List<Price> findPricesWithoutActivePromotion(String idQuincaillerie);
     List<Object[]> findPricesWithActivePromotion();

@@ -4,6 +4,7 @@ import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
+
 @Data  @AllArgsConstructor @NoArgsConstructor
 public class getProductSuggestionDTO {
     private String id;
@@ -14,4 +15,6 @@ public class getProductSuggestionDTO {
     private String descriptionCategorie;
     private String brand;
     private String unite;
+    private String imageUrl;
 }
+

@@ -2,6 +2,7 @@ package com.ict300.P04.Service.sheduler;
 
 import com.ict300.P04.Entite.TransactionPaiement;
 import com.ict300.P04.Service.commmande.CommandeService;
+import com.ict300.P04.Service.paiement.PaiementSseService;
 import com.ict300.P04.Service.paiement.aangaraPayService.AangaraPayService;
 import com.ict300.P04.Utilitaires.StatutPaiement;
 import com.ict300.P04.repository.interfaces.commande.CommandeInterface;
@@ -21,7 +22,7 @@ public class PaiementCheckupSheduler {
     private TransactionPaiementInterface transactionPaiementInterface;
 
     @Autowired
-    private CommandeInterface commandeInterface;
+    private PaiementSseService paiementSseService;
 
     @Autowired
     private AangaraPayService aangaraPayService;
@@ -55,11 +56,15 @@ public class PaiementCheckupSheduler {
                         log.info("🛍️ [CRON] Commande #{} validée (PAYEE) grâce au rattrapage automatique.", tx.getIdTransaction());
 
                         commandeService.confirmerPaiement(tx.getIdTransaction() , tx.getOperateur());
+
+                        paiementSseService.notifierChangementStatut(tx.getIdTransaction(), StatutPaiement.SUCCESSFUL);
                     }
                     else if (statutReel == StatutPaiement.FAILED) {
                         // Optionnel : Tu peux passer la commande en ECHOUEE ou la laisser en ATTENTE_DE_PAIEMENT
                         // pour que le client retente avec une nouvelle transaction.
                         log.info("❌ [CRON] Commande #{} : Le paiement a finalement échoué chez l'agrégateur.", tx.getIdTransaction());
+                        commandeService.echecPaiement(tx.getIdTransaction());
+                        paiementSseService.notifierChangementStatut(tx.getIdTransaction() , StatutPaiement.FAILED);
                     }
                 }
             } catch (Exception e) {

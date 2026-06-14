@@ -1,6 +1,7 @@
 package com.ict300.P04.Controller.products;
 
 import com.ict300.P04.Controller.CheckController;
+import com.ict300.P04.DTO.category.response.ProductInCategoryDTO;
 import com.ict300.P04.DTO.product.request.AddProductDTO;
 import com.ict300.P04.DTO.product.request.UpdateProductDTO;
 import com.ict300.P04.DTO.product.response.ProductStockDTO;
@@ -8,6 +9,7 @@ import com.ict300.P04.DTO.product.response.SearchProductDTO;
 import com.ict300.P04.DTO.product.response.getProductSuggestionDTO;
 import com.ict300.P04.DTO.recommadation.response.RecommendedProductDTO;
 import com.ict300.P04.Exception.*;
+import com.ict300.P04.Service.product.PourVousService;
 import com.ict300.P04.Service.product.ProductService;
 import com.ict300.P04.Service.recommadation.RecommandationService;
 import io.swagger.v3.oas.annotations.Operation;
@@ -32,13 +34,12 @@ public class ProductController {
 
     private final ProductService productService;
     private final RecommandationService recommandationService;
+    private final PourVousService pourVousService;
 
 
     @Operation(summary = "Rechercher des produits par nom")
     @GetMapping("/search")
-    public ResponseEntity<List<SearchProductDTO>> search(@RequestParam String name,
-                                                         @RequestParam(required = false) Double latitude,
-                                                         @RequestParam(required = false) Double longitude,
+    public ResponseEntity<List<SearchProductDTO>> search(@RequestParam String name, @RequestParam(required = false) Double latitude, @RequestParam(required = false) Double longitude,
                                                          @RequestParam(required = false, defaultValue = "1km") String scope) {
 
         log.info("Recherche de produits - Nom: {}, Lat: {}, Lng: {}, Scope: {}", name, latitude, longitude, scope);
@@ -50,7 +51,15 @@ public class ProductController {
     @GetMapping("/getProduct/{idPrice}")
     public ResponseEntity<SearchProductDTO> getProductSearchById(@PathVariable("idPrice") String idPrice) {
         log.info("Récupération du produit avec l'id: {}", idPrice);
-        SearchProductDTO results = productService.getProductById(idPrice);
+        SearchProductDTO results = productService.getProductSearchById(idPrice);
+        return ResponseEntity.ok(results);
+    }
+
+    @Operation(summary = "Récupérer un produit du stock par son idPrice")
+    @GetMapping("/getProductStock/{idPrice}")
+    public ResponseEntity<ProductStockDTO> getProductStockById(@PathVariable("idPrice") String idPrice) {
+        log.info("Récupération du produit avec l'id: {}", idPrice);
+        ProductStockDTO results = productService.getProductStockById(idPrice);
         return ResponseEntity.ok(results);
     }
 
@@ -105,10 +114,8 @@ public class ProductController {
     }
 
     @Operation(summary = "Mise à jour d'un produit existant (Données + Image)")
-    @PatchMapping(value = "/{id}", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
-    public ResponseEntity<?> updateProduct(@PathVariable("id") String productId,
-                                           @RequestPart("data") @Valid UpdateProductDTO updateProductDTO,
-                                           @RequestPart(value = "image", required = false) MultipartFile image,
+    @PatchMapping(value = "/{idPrice}", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
+    public ResponseEntity<?> updateProduct(@PathVariable("idPrice") String idPrice, @RequestPart("data") @Valid UpdateProductDTO updateProductDTO, @RequestPart(value = "image", required = false) MultipartFile image,
                                            Authentication authentication) {
 
         var errorResponse = CheckController.validateQuincaillerieAuthentication(authentication);
@@ -116,15 +123,18 @@ public class ProductController {
 
         String qId = CheckController.getQuincaillerieId(authentication);
 
-        log.info("Mise à jour produit ID: {} par UID: {} (Image: {})", productId, CheckController.getUserId(authentication), (image != null));
+        log.info("Mise à jour produit ID: {} par UID: {} (Image: {})", idPrice, CheckController.getUserId(authentication), (image != null));
 
         try {
-            productService.updateProduct(productId, updateProductDTO, image, qId);
+            System.out.println("Le produit ID est: "+idPrice);
+            System.out.println(updateProductDTO);
+            System.out.println(qId);
+            productService.updateProduct(idPrice, updateProductDTO, image, qId);
             return ResponseEntity.ok(new ApiResponse(true, "Produit mis à jour avec succès"));
         } catch (ProductNotFoundException e) {
             throw e;
         } catch (Exception e) {
-            log.error("Erreur lors de la mise à jour du produit {}", productId, e);
+            log.error("Erreur lors de la mise à jour du produit {}", idPrice, e);
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
                     .body(new ApiError(HttpStatus.INTERNAL_SERVER_ERROR, "Erreur serveur lors de la mise à jour"));
         }
@@ -151,5 +161,19 @@ public class ProductController {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
                     .body(new ApiError(HttpStatus.INTERNAL_SERVER_ERROR, "Erreur serveur lors de la suppression"));
         }
+    }
+
+    @GetMapping("/forYou")
+    public ResponseEntity<?> getForYouProducts(@RequestParam(required = false) Double longitude, @RequestParam(required = false) Double latitude,
+            @RequestParam(required = false, defaultValue = "ville") String scope , Authentication authentication) {
+
+        var errorResponse = CheckController.validateBasicAuthentication(authentication);
+        if (errorResponse.isPresent()) return errorResponse.get();
+
+        String uid = CheckController.getUserId(authentication);
+
+        List<ProductInCategoryDTO> recommandations = pourVousService.getForYouProduct(uid, longitude, latitude, scope);
+
+        return ResponseEntity.ok(recommandations);
     }
 }

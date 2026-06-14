@@ -340,7 +340,7 @@ public class CommandeService {
         commandeInterface.save(commande);
     }
 
-     @Transactional
+    @Transactional
     public void confirmerPaiement(String idTransaction, String method) {
         TransactionPaiement tx = transactionPaiementInterface.findByIdTransaction(idTransaction)
                  .orElseThrow(() -> new ResourceNotFoundException("L'id de la transaction n'existe pas"));
@@ -488,6 +488,9 @@ public class CommandeService {
             return;
         }
 
+        tx.setStatutAgregateur(StatutPaiement.FAILED);
+        tx.setDateMiseAJour(LocalDateTime.now());
+        transactionPaiementInterface.save(tx);
 
         String emailClient = commande.getUser().getEmail();
         String sujet = "⚠️ Problème technique avec votre paiement - Commande #" + commande.getIdCommande();

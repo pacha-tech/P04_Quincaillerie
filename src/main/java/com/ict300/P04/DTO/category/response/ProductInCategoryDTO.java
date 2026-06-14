@@ -6,6 +6,7 @@ import lombok.NoArgsConstructor;
 
 import java.math.BigDecimal;
 
+
 @Data  @AllArgsConstructor @NoArgsConstructor
 public class ProductInCategoryDTO {
     private String idPrice;
@@ -26,3 +27,4 @@ public class ProductInCategoryDTO {
     private boolean inPromotion;
     private Double taux;
 }
+

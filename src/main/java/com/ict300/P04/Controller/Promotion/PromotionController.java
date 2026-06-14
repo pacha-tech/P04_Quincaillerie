@@ -96,10 +96,11 @@ public class PromotionController {
 
     @GetMapping("/allProductInPromotion")
     @Operation(summary = "Get tous les produits qui sont en promotion, triés par proximité si le GPS est fourni")
-    public ResponseEntity<?> getAllProductInPromotion(@RequestParam(required = false) Double latitude, @RequestParam(required = false) Double longitude) {
+    public ResponseEntity<?> getAllProductInPromotion(@RequestParam(required = false) Double latitude, @RequestParam(required = false) Double longitude ,
+                                                      @RequestParam(required = false , defaultValue = "ville") String scope) {
         // Cet endpoint est public (utilisé côté client pour voir la liste des promotions sans être connecté)
         try {
-            List<SearchProductDTO> produitPromotionDTOs = promotionService.getAllProduitInPromotionGrouped(latitude, longitude);
+            List<SearchProductDTO> produitPromotionDTOs = promotionService.getAllProduitInPromotionGrouped(latitude, longitude , scope);
             return ResponseEntity.ok(produitPromotionDTOs);
         } catch (ResourceNotFoundException e) {
             throw e;
