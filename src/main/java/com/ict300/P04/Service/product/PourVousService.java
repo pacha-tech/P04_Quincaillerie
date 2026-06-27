@@ -29,33 +29,21 @@ public class PourVousService {
     private PriceInterface priceInterface;
 
     @Autowired
-    LocalisationService localisationService;
+    private LocalisationService localisationService;
 
     public List<ProductInCategoryDTO> getForYouProduct(String idUser, Double longitude, Double latitude, String scope) {
         List<ProductInCategoryDTO> filteredProducts = new ArrayList<>();
-        String targetCategoryId = null;
 
-        // 1. DÉTERMINER LA CATÉGORIE CIBLE (Historique utilisateur ou Tendance globale)
-        List<String> userTopCategories = historiqueNavigationInterface.findTopCategoriesByUserId(idUser, PageRequest.of(0, 1));
+        // 1. DÉTERMINER LES 3 CATÉGORIES CIBLES (Historique utilisateur ou Tendance globale)
+        List<String> targetCategoryIds = historiqueNavigationInterface.findTopCategoriesByUserId(idUser, PageRequest.of(0, 3));
 
-        if (!userTopCategories.isEmpty()) {
-            targetCategoryId = userTopCategories.get(0);
-        } else {
-            // Mode secours : On prend la catégorie la plus populaire de la plateforme
-            List<String> globalTopCategories = historiqueNavigationInterface.findGlobalTopCategories(PageRequest.of(0, 1));
-            if (!globalTopCategories.isEmpty()) {
-                targetCategoryId = globalTopCategories.get(0);
-            }
+        if (targetCategoryIds.isEmpty()) {
+            targetCategoryIds = historiqueNavigationInterface.findGlobalTopCategories(PageRequest.of(0, 3));
         }
 
-        // Si la base est totalement vide (aucun historique global), on renvoie une liste vide
-        if (targetCategoryId == null) {
-            log.warn("Aucune donnée d'historique disponible. Retour d'une liste 'Pour vous' vide.");
-            return filteredProducts;
-        }
-
-        // 2. RÉCUPÉRATION DES PRODUITS BRUTS DE LA CATÉGORIE CIBLE
-        List<Object[]> results = priceInterface.findPricesByCategory(targetCategoryId);
+        // 2. RÉCUPÉRATION DE TOUS LES PRODUITS BRUTS
+        // /!\ IMPORTANT : Tu dois utiliser une méthode qui ramène TOUS les prix et leurs taux.
+        List<Object[]> results = priceInterface.findAllPricesWithTaux();
 
         // 3. PRÉPARATION DES FILTRES GÉOGRAPHIQUES
         double maxDistanceKm = GeoUtils.convertScopeToKilometers(scope);
@@ -133,6 +121,21 @@ public class PourVousService {
 
             filteredProducts.add(dto);
         }
+
+        // 5. TRI DE LA LISTE (METTRE LES CATÉGORIES CIBLES EN HAUT)
+        final List<String> finalTargetCategories = targetCategoryIds;
+
+        filteredProducts.sort((p1, p2) -> {
+            int index1 = finalTargetCategories.indexOf(p1.getIdCategory());
+            int index2 = finalTargetCategories.indexOf(p2.getIdCategory());
+
+            // Si la catégorie du produit n'est pas dans le top 3, indexOf renvoie -1.
+            // On attribue Integer.MAX_VALUE pour que ces produits se retrouvent à la fin de la liste.
+            int rank1 = (index1 == -1) ? Integer.MAX_VALUE : index1;
+            int rank2 = (index2 == -1) ? Integer.MAX_VALUE : index2;
+
+            return Integer.compare(rank1, rank2);
+        });
 
         return filteredProducts;
     }

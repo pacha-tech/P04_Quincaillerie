@@ -107,6 +107,7 @@ public class RetraitService {
 
         TransactionVersement versement = new TransactionVersement();
 
+        /*
         versement.setIdTransactionVersement(GenerateID.GenerateTransactionVersementID());
         versement.setReferenceId(withdrawalResponse.getData().getReference_id());
         versement.setIdTransaction(withdrawalResponse.getData().getTransaction_id());
@@ -117,6 +118,7 @@ public class RetraitService {
         versement.setCommande(commande);
         versement.setDateCreation(LocalDateTime.now());
         versement.setDateMiseAJour(LocalDateTime.now());
+         */
 
         transactionVersementInterface.save(versement);
     }

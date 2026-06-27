@@ -187,9 +187,14 @@ public class ProductService {
     public List<getProductSuggestionDTO> getAllSuggestions() {
         return productInterface.findOnlyName().stream()
                 .map(p -> new getProductSuggestionDTO(
-                        p.getIdProduct(), p.getName(), p.getCategory().getIdCategory(),
-                        p.getCategory().getName(), p.getDescription(),
-                        p.getCategory().getDescription(), p.getBrand(), p.getUnit(),
+                        p.getIdProduct(),
+                        p.getName(),
+                        p.getCategory().getIdCategory(),
+                        p.getCategory().getName(),
+                        p.getDescription(),
+                        p.getCategory().getDescription(),
+                        p.getBrand(),
+                        p.getUnit(),
                         p.getImageUrl()
                 )).toList();
     }

@@ -37,6 +37,7 @@ public class GeoUtils {
             case "500m": return 0.5;
             case "1km": return 1.0;
             case "5km": return 5.0;
+            case "10km": return 10.0;
             case "ville": return -1.0;
             case "region": return -1.0;
             default: return 1.0;

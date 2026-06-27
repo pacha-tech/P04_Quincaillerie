@@ -19,4 +19,5 @@ public interface PriceCustomInterface {
     List<Price> findPricesWithoutActivePromotion(String idQuincaillerie);
     List<Object[]> findPricesWithActivePromotion();
     List<Object[]> findPricesByCategory(String idCategory);
+    List<Object[]> findAllPricesWithTaux();
 }

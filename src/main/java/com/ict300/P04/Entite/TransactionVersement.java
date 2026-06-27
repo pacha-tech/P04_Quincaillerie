@@ -10,6 +10,7 @@ import java.time.LocalDateTime;
 @Table(name = "TransactionVersement")
 @Data
 public class TransactionVersement {
+    /*
     @Id
     @Column(name = "id_transaction_versement", length = 10)
     private String idTransactionVersement;
@@ -28,6 +29,34 @@ public class TransactionVersement {
 
     @Column(name = "operateur")
     private String operateur;
+
+    @Enumerated(EnumType.STRING)
+    @Column(name = "statut")
+    private StatutPaiement statut;
+
+    @ManyToOne
+    @JoinColumn(name = "commande_id", nullable = false)
+    private Commande commande;
+
+    @Column(name = "date_creation")
+    private LocalDateTime dateCreation;
+
+    @Column(name = "date_mise_a_jour")
+    private LocalDateTime dateMiseAJour;
+    */
+
+    @Id
+    @Column(name = "id_transaction_versement", length = 10)
+    private String idTransactionVersement;
+
+    @Column(name = "id_message", unique = true)
+    private String messageId;
+
+    @Column(name = "id_withdrawal")
+    private String withdrawalId;
+
+    @Column(name = "montant_net_transfere")
+    private Double montantNetTransfere;
 
     @Enumerated(EnumType.STRING)
     @Column(name = "statut")
