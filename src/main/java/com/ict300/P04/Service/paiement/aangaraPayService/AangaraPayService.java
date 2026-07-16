@@ -180,7 +180,8 @@ public class AangaraPayService {
             requestBody.put("app_key", apiKey);
             requestBody.put("transaction_id", idTransaction);
             requestBody.put("return_url", "https://brixel-web.onrender.com/client/commande");
-            requestBody.put("notify_url", "https://ventricle-frostlike-plethora.ngrok-free.dev/quincaillerie/paiement/webhook");
+            //requestBody.put("notify_url", "https://ventricle-frostlike-plethora.ngrok-free.dev/quincaillerie/paiement/webhook");
+            requestBody.put("notify_url", "https://p04-quincaillerie.onrender.com/quincaillerie/paiement/webhook");
             requestBody.put("operator", operateur);
             requestBody.put("devise_id", "XAF");
 
