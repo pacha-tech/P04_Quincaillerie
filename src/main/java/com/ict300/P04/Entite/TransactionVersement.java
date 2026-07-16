@@ -10,7 +10,7 @@ import java.time.LocalDateTime;
 @Table(name = "TransactionVersement")
 @Data
 public class TransactionVersement {
-
+    /*
     @Id
     @Column(name = "id_transaction_versement", length = 10)
     private String idTransactionVersement;
@@ -43,8 +43,8 @@ public class TransactionVersement {
 
     @Column(name = "date_mise_a_jour")
     private LocalDateTime dateMiseAJour;
+     */
 
-    /*
     @Id
     @Column(name = "id_transaction_versement", length = 10)
     private String idTransactionVersement;
@@ -53,7 +53,7 @@ public class TransactionVersement {
     private String messageId;
 
     @Column(name = "id_withdrawal")
-    private String withdrawalId;
+    private int withdrawalId;
 
     @Column(name = "montant_net_transfere")
     private Double montantNetTransfere;
@@ -71,5 +71,5 @@ public class TransactionVersement {
 
     @Column(name = "date_mise_a_jour")
     private LocalDateTime dateMiseAJour;
-    */
+
 }

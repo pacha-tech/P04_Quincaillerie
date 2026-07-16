@@ -183,7 +183,7 @@ public class PaiementService {
         if (isDepot) {
             traiterWebhookDepot(payloadResponse);
         } else {
-            traiterWebhookRetrait(payloadResponse);
+            //traiterWebhookRetrait(payloadResponse);
         }
     }
 
@@ -215,7 +215,7 @@ public class PaiementService {
         }
     }
 
-
+    /*
     private void traiterWebhookRetrait(WebhookPayloadResponse payload) {
         String idTransaction = payload.getTransaction_id();
         String method = payload.getOperator();
@@ -242,4 +242,5 @@ public class PaiementService {
                 log.warn("Statut retrait non géré : {}", statutOfficiel);
         }
     }
+     */
 }

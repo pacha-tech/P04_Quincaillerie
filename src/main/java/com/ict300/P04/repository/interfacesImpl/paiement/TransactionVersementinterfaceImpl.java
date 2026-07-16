@@ -11,6 +11,7 @@ public class TransactionVersementinterfaceImpl implements TransactionVersementCu
     @PersistenceContext
     private EntityManager entityManager;
 
+    /*
     @Override
     public Optional<TransactionVersement> findByIdTransaction(String idTransaction) {
         String jpql = "SELECT tp " +
@@ -21,4 +22,5 @@ public class TransactionVersementinterfaceImpl implements TransactionVersementCu
                 .setParameter("id" , idTransaction)
                 .getResultList().stream().findFirst();
     }
+     */
 }

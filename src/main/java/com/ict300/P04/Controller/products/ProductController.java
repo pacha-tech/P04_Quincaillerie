@@ -167,8 +167,8 @@ public class ProductController {
     public ResponseEntity<?> getForYouProducts(@RequestParam(required = false) Double longitude, @RequestParam(required = false) Double latitude,
             @RequestParam(required = false, defaultValue = "ville") String scope , Authentication authentication) {
 
-        var errorResponse = CheckController.validateBasicAuthentication(authentication);
-        if (errorResponse.isPresent()) return errorResponse.get();
+        //var errorResponse = CheckController.validateBasicAuthentication(authentication);
+        //if (errorResponse.isPresent()) return errorResponse.get();
 
         String uid = CheckController.getUserId(authentication);
 

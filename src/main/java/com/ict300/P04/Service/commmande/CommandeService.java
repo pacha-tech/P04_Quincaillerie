@@ -552,6 +552,7 @@ public class CommandeService {
         log.info("Commande {} annulée suite à l'action du client. Stock libéré.", commande.getIdCommande());
     }
 
+    /*
     @Transactional
     public void confirmerTransfert(String idTransaction) {
 
@@ -592,4 +593,5 @@ public class CommandeService {
         detailRetraitInterface.save(preuve);
 
     }
+     */
 }

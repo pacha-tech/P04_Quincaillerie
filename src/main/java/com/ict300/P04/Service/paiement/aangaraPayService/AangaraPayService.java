@@ -139,13 +139,14 @@ public class AangaraPayService {
                 int statusCode = responseBody.getStatusCode();
 
                 if(statusCode == 200 || statusCode == 201) {
-                    log.info("✅ Retrait réussi pour la quincaillerie {} ! Montant: {}. Transaction ID: {}", idQuincaillerie, amount, responseBody.getData().getTransaction_id());
+                    log.info("✅ Retrait réussi pour la quincaillerie {} ! Montant: {}. Transaction ID: {}", idQuincaillerie, amount, responseBody.getData().getWithdrawal_id());
                     return responseBody;
                 }else {
-                    log.warn("⚠️ Retrait initié mais non réussi immédiatement. Statut: {}",
-                            responseBody.getData() != null ? responseBody.getData().getStatus() : "INCONNU");
-                    throw new RuntimeException("Le transfert vers le vendeur a échoué. Statut : " +
-                            (responseBody.getData() != null ? responseBody.getData().getStatus() : "INCONNU"));
+                    //log.warn("⚠️ Retrait initié mais non réussi immédiatement. Statut: {}",
+                    //        responseBody.getData() != null ? responseBody.getData().getStatus() : "INCONNU");
+                    //throw new RuntimeException("Le transfert vers le vendeur a échoué. Statut : " + (responseBody.getData() != null ? responseBody.getData().getStatus() : "INCONNU"));
+                    throw new RuntimeException("Le transfert vers le vendeur a échoué. Statut : " + statusCode);
+
                 }
             }
         }catch (Exception e) {

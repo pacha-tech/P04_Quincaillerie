@@ -8,6 +8,7 @@ import com.ict300.P04.Service.paiement.aangaraPayService.AangaraPayService;
 import com.ict300.P04.Utilitaires.GenerateID;
 import com.ict300.P04.Utilitaires.StatutCommande;
 import com.ict300.P04.Utilitaires.StatutPaiement;
+import com.ict300.P04.repository.interfaces.commande.CommandeInterface;
 import com.ict300.P04.repository.interfaces.detailCommande.DetailCommandeInterface;
 import com.ict300.P04.repository.interfaces.quincaillerie.QuincaillerieInterface;
 import com.ict300.P04.repository.interfaces.retraitCode.RetraitCodeInterface;
@@ -47,6 +48,9 @@ public class RetraitService {
 
     @Autowired
     private RedixService redixService;
+
+    @Autowired
+    private CommandeInterface commandeInterface;
 
     @Transactional(noRollbackFor = {InvalidOtpCodeException.class, MaxAttemptsExceededException.class})
     public void validerRetrait(ValidationRetraitDTO requestBody, String ipVendeur, String userAgentVendeur, String quincaillerieId, String uid) {
@@ -107,6 +111,7 @@ public class RetraitService {
 
         TransactionVersement versement = new TransactionVersement();
 
+        /*
         versement.setIdTransactionVersement(GenerateID.GenerateTransactionVersementID());
         versement.setReferenceId(withdrawalResponse.getData().getReference_id());
         versement.setIdTransaction(withdrawalResponse.getData().getTransaction_id());
@@ -117,7 +122,20 @@ public class RetraitService {
         versement.setCommande(commande);
         versement.setDateCreation(LocalDateTime.now());
         versement.setDateMiseAJour(LocalDateTime.now());
+         */
+
+        versement.setIdTransactionVersement(GenerateID.GenerateTransactionVersementID());
+        versement.setMessageId(withdrawalResponse.getData().getMessageId());
+        versement.setWithdrawalId(withdrawalResponse.getData().getWithdrawal_id());
+        versement.setMontantNetTransfere(Double.parseDouble(amount));
+        versement.setStatut(StatutPaiement.SUCCESSFUL);
+        versement.setCommande(commande);
+        versement.setDateCreation(LocalDateTime.now());
+        versement.setDateMiseAJour(LocalDateTime.now());
+
+        commande.setStatut(StatutCommande.LIVREE);
 
         transactionVersementInterface.save(versement);
+        commandeInterface.save(commande);
     }
 }
