@@ -71,6 +71,8 @@ public class PaiementService {
         DetailCommande detailCommande = detailCommandeInterface.getDetailCommandeByCommande(idCommande)
                 .orElseThrow(() -> new ResourceNotFoundException("Les détails de cette commande sont introuvables."));
 
+        List<TransactionPaiement> transactionPaiementList = transactionPaiementInterface.findTransactionByCommandeAndStatutisPending(commande);
+
         List<LigneCommande> ligneCommandes = ligneCommandeInterface.getDetailCommande(commande.getIdCommande());
 
 
@@ -82,6 +84,13 @@ public class PaiementService {
         }
         if (StatutCommande.ANNULEE.equals(commande.getStatut())) {
             throw new CommandeAlreadyCancelledException("La commande est annulée.");
+        }
+
+        if(!transactionPaiementList.isEmpty()) {
+            for(TransactionPaiement t : transactionPaiementList) {
+                t.setStatutAgregateur(StatutPaiement.FAILED);
+            }
+            transactionPaiementInterface.saveAll(transactionPaiementList);
         }
 
         /*

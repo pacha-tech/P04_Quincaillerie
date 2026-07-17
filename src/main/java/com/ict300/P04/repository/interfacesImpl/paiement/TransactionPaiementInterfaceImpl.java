@@ -1,5 +1,6 @@
 package com.ict300.P04.repository.interfacesImpl.paiement;
 
+import com.ict300.P04.Entite.Commande;
 import com.ict300.P04.Entite.TransactionPaiement;
 import com.ict300.P04.Utilitaires.StatutPaiement;
 import com.ict300.P04.repository.interfaces.transaction.paiement.TransactionPaiementCustomInterface;
@@ -35,5 +36,18 @@ public class TransactionPaiementInterfaceImpl implements TransactionPaiementCust
         return entityManager.createQuery(jpql , TransactionPaiement.class)
                 .setParameter("id" , idTransaction)
                 .getResultList().stream().findFirst();
+    }
+
+    @Override
+    public List<TransactionPaiement> findTransactionByCommandeAndStatutisPending(Commande commande) {
+        String jpql = "SELECT tp " +
+                "FROM TransactionPaiement tp " +
+                "WHERE tp.commande = :com " +
+                "AND tp.statutAgregateur = :statut ";
+
+        return  entityManager.createQuery(jpql , TransactionPaiement.class)
+                .setParameter("com" , commande)
+                .setParameter("statut" , StatutPaiement.PENDING)
+                .getResultList();
     }
 }
